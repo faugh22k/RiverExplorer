@@ -1,0 +1,28 @@
+
+h2 {
+	text-align: center;
+	color: #1975D1;
+		/*#0066CC;  0099CC FFFFCC;*/
+	background:#292929;
+}
+
+body { 
+    /*background: #F2F2F2;*/
+    /*background: #323232; /*#292929;*/
+    background: #3D3D3D;
+
+} 
+
+#canvas {
+	/*background:#292929; */
+	margin-left: auto;
+	margin-right: auto;
+	width: 70%;
+}
+
+div.center{  
+	margin-left: auto;
+	margin-right: auto;
+	width: 35%;
+	
+} 

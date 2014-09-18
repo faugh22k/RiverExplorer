@@ -110,10 +110,11 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 
 		this.improvedPassability = this.possibleActions[action].improvedPassability;
 		this.currentAction = action
+		this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".90"});
 		// tmp testing thing!!!!!!!!!!!!!!!!!!!!!!!!!! switch back! todo! *****
-		if (this.improvedPassability < 0.5){
+		/*if (this.improvedPassability < 0.5){
 			this.improvedPassability = 0.9
-		}
+		}*/
 		alert("original passability: " + this.passability + "\nnew passability: " + this.improvedPassability)
 
 	},
@@ -203,7 +204,11 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			if (!this.isBarrier){
 				this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".80"});
 			} else {
-				this.nodeDrawing.attr({fill: "#78c44c" /*"#6bba4e"/*"#84cd4a"/*"#60b150"/*"#40AE26"/*"#669900"/*"#33B533"*/, stroke:"transparent","opacity":"0.85"/*"1.0"*/});
+				if (this.currentAction == -1){
+					this.nodeDrawing.attr({fill: "#78c44c" /*"#6bba4e"/*"#84cd4a"/*"#60b150"/*"#40AE26"/*"#669900"/*"#33B533"*/, stroke:"transparent","opacity":"0.85"/*"1.0"*/});
+				} else {
+					this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".85"});
+				}
 			}
 			// color the paths to the children (river segments)
 			for (index in this.children[0]){
@@ -478,7 +483,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			entry = entriesForNode[key]
 			cost = Number(entry["cost"]) 
 			//alert("cost = \'" + cost + "\'\nentry['cost'] = \'" + entry["cost"] + "\'")
-			if (!isNaN(cost) && (closestCost == null || ((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost < dataManager.budget)) {  
+			if (!isNaN(cost) && (closestCost == null || ((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
 				closestEntry = entry
 				closestCost = cost
 				alert(closestCost + " cost is closer to our budget")
@@ -492,7 +497,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			return null;
 		}
 
-		alert("returning closest entry: " + closestEntry) 
+		alert("returning closest entry: " + closestEntry + ", cost of " + closestCost) 
 		return closestEntry
 	}, 
 
@@ -506,7 +511,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	 **/
 	DataManager.prototype.followSolution = function(start, includeSibling){
 		// *important  dataManager.allNodes[start.nodeID].passabilityImprovement = _____
-		if (start == undefined || dataManager.allNodes[start.nodeID] == undefined){
+		if (start == undefined || dataManager.allNodes[start.nodeID] == undefined || Number(start["value"]) <= 0){
+			alert("in followSolution(). returning because solution start or node is undefined")
 			return
 		}
 
@@ -516,17 +522,22 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		alert("action: " + action + "    current node: \n" + currentNode.toString())
 		currentNode.setAction(action)   
 
-		alert("taking action " + action + " at \n" + currentNode.toString() + "\nopt entry: \n" + start)
+		//alert("taking action " + action + " at \n" + currentNode.toString() + "\nopt entry: \n" + start)
 
 		alert("start: " + start + "\n\ncurrentNode: " + currentNode);
 
 		//alert("the id of the child is: " +  start["firstChildID"] + "\nthe value of the child is: " +  start["valueChild"])
-		if (start["firstChildID"] != "-1" && Number(start["valueChild"]) <= 0){
+		if (start["firstChildID"] != "-1" && Number(start["valueChild"]) > 0){ 
+			alert("following solution to actions spreading out from child!")
 			child = dataManager.OPT[start["firstChildID"]][start["valueChild"]]
 			dataManager.followSolution(child, true)
 		} 
 
-		if(includeSibling && [start["siblingID"]] != "-1" && Number(start["valueSibling"]) <= 0){ 
+		/*if(includeSibling){
+			alert("the id of the sibling is: " +  start["siblingID"] + "\nthe value of the sibling is: " +  start["siblingChild"])
+		}*/
+		if(includeSibling && [start["siblingID"]] != "-1" && Number(start["valueSibling"]) > 0){ 
+			alert("following solution to actions spreading out from sibling!")
 			sibling = dataManager.OPT[start["siblingID"]][start["valueSibling"]]
 			dataManager.followSolution(sibling, true)
 		}

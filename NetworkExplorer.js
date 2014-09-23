@@ -829,10 +829,17 @@ var set;
 var circle;
 var width;
 var height;
+var back;
 
 var viewBox;
 var viewRectangle;
 var colors;
+
+var mouseIsDown = false;
+var mouseDownX;
+var mouseDownY;
+var mouseUpX;
+var mouseUpY;
 
 /**
  * Called when pan button is clicked.
@@ -979,17 +986,104 @@ function main(){
 	viewBox = [0, 0, 3000, 3000];
 	//viewBox = [0, 0, 80, 80];
 
-	paper = new Raphael(document.getElementById('canvas'), width, height); 
-	
+
+
+//=======================================================================================
+//========================= Mouse Events ================================================
+//=======================================================================================
+
+// On window load, add a bunch of listeners for mouse events
+$(window).load(function () {
+
+        var canvas = document.getElementById("canvas");
+
+        // Action performed when mouse button if pressed down
+        var mouseDownListener = function(event){
+
+        	console.log("mouse down");
+
+            mouseIsDown = true;
+            mouseDownX = event.pageX;
+            mouseDownY = event.pageY;
+
+            console.log("initial position :" + mouseDownX + " and " + mouseDownY);
+        };
+
+        // Action performed when mouse button is released
+        var mouseUpListener = function(event)
+        {
+        	console.log("mouse up");
+        	mouseIsDown = false;
+        }
+
+        // Action performed when mouse is moving
+        var mouseMoveListener = function(event)
+        {
+        	// Do nothing unless dragging
+        	if(mouseIsDown)
+        	{
+        		console.log("dragging");
+
+        		var currentx = event.pageX;
+        	    var currenty = event.pageY;
+
+        	    translate(0.5*(currentx - mouseDownX), 0.5*(currenty - mouseDownY));
+
+        	    mouseDownX = currentx;
+        	    mouseDownY = currenty;
+        	}
+        }
+
+        // Action performed when mouse scroll is scrolled
+        var mouseZoomListener = function(event)
+        {
+        	  /* we want to prevent document scrolling when pressing the arrows: */
+		    event.preventDefault();
+
+		    // Delta returns +120 when up and -120 when down 
+		    // There might be some browser issues according to online sources
+		    // For now it works for chrome
+            if (event.wheelDelta >= 120)
+            	{zoom(1.1);}
+    		else if (event.wheelDelta <= -120)
+            	{zoom(0.9);}
+
+        }
+
+        // Adding all the listeners for mouse events: down, up, move, scroll
+        canvas.addEventListener("mousedown",mouseDownListener,false);
+        canvas.addEventListener("mouseup", mouseUpListener,false);
+        canvas.addEventListener("mousemove", mouseMoveListener, false);
+        canvas.addEventListener('mousewheel', mouseZoomListener, false);      
+    });
+
+//=======================================================================================
+//=========================End of Mouse Events ==========================================
+//=======================================================================================	
+
+
+s 
+	 
+paper = new Raphael(document.getElementById('canvas'), width, height); 
 	/*paper.drag(function(dx, dy, x, y, dragMove){console.log("moving!: change x,y" + dx + "," + dy)},
 		function(x, y, dragStart){console.log("start of mouse drag!!!!!!!!!!!!!"); alert("start drag")},
-		function(dragEnd){console.log("finished mouse drag!!!!!!!!!!!!"); alert("stopped drag")});*/
+		function(dragEnd){console.log("finished mouse drag!!!!!!!!!!!!"); alert("stopped drag")});
+*/
+
+// paper.canvas.mousemove(function(e) {
+//   var offset = $(this).offset(), offsetX = e.pageX - offset.left, offsetY = e.pageY - offset.top;
+//   //do something with offsetX and offsetY
+//   console.log("moving");
+
+// });
+
 	$(document).keydown(function(event) {
 	
+
 		/* since we are using jquery, the event is already normalize */
 		var arrowKeys = {"left": 37, "up": 38, "right": 39, "down": 40, "plus": 187, "minus": 189};
 		if(event.keyCode == arrowKeys["left"]) {
-			translate(10, 0)
+		translate(10, 0)
 		}
 		else if(event.keyCode == arrowKeys["up"]) {
 			translate(0, 10)			

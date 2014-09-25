@@ -40,7 +40,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	Node.prototype.addChild = function (node, length, accessibility, streamSegments){
 		for (index in this.children){
 			if (this.children[0][index] === node){
-				alert("tried to add a child twice!")
+				// tmp error alert alert("tried to add a child twice!")
 				return;
 			}
 		}
@@ -483,7 +483,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			entry = entriesForNode[key]
 			cost = Number(entry["cost"]) 
 			//alert("cost = \'" + cost + "\'\nentry['cost'] = \'" + entry["cost"] + "\'")
-			if (!isNaN(cost) && (closestCost == null || ((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
+			//if (!isNaN(cost) && (closestCost == null || ((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
+			if (!isNaN(cost) && ((closestCost == null && cost <= dataManager.budget) || ((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
 				closestEntry = entry
 				closestCost = cost
 				alert(closestCost + " cost is closer to our budget")
@@ -674,10 +675,11 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			} else if (current.barrierType == 2){ 
 				action = dams
 				//alert("action = " + action)
-			} else {
-				alert("creating node, with " + current.barrierType + " barrierType") 
 			}
-
+			//} else {
+			//	//alert("creating node, with " + current.barrierType + " barrierType") 
+			//}
+ 
 			allNodes[currentID] = new Node(currentID, current.isBarrier, current.barrierType, action, current.passability, 0, 0, null, null);     
 			//alert("creating node with " + allNodes[currentID].passability.toString() + " passability")
  
@@ -685,7 +687,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			root = allNodes[currentID];
 			numberNodes++;
 		} 
-		console.log("\nread in the nodes. (" + numberNodes.toString() + ")\n");
+		alert("\nread in the nodes. (" + numberNodes.toString() + ")\n");
 		// tmp comment alert("\nread in the nodes.\n");
  
 
@@ -696,27 +698,30 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
  		// read in all streams and use them to form connections between the nodes. 
 		for (index in streams){  
+			//alert("looping through streams.")
 			try { 
-				//console.log("stream " + index);
+				//alert("stream " + index);
 				current = streams[index];
-				//console.log("current: " + current)
+				//alert("current: " + current)
 				upstreamID = current.upstreamNodeID.toString();
 				downstreamID = current.downstreamNodeID.toString();
 				upstream = allNodes[upstreamID]; 
 				downstream = allNodes[downstreamID];  
 
+
 				pathDirections = "M";
-				for (j = 0; j + 1 < current.segments.length; j+=2){
+				//alert("current.segments: " + current.segments)
+				for (j = 0; j + 1 < current.segments.length; j+=2){ 
 					if (pathDirections != "M"){
 						pathDirections += "L";
 					}
 					pathDirections += current.segments[j];
 					pathDirections += ",";
 					pathDirections += current.segments[j+1]; 
-				}
+				} 
 
 				//// tmp comment alert("adding path " + downstreamID + " -> " + upstreamID + " \n" + pathDirections)
-				path = paper.path(pathDirections); 
+				path = paper.path(pathDirections);  
 				path.attr({"stroke-width":2});
 
 
@@ -725,6 +730,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				//upstream.setXY(current.segments[0], current.segments[1]);       //testing
 				//downstream.setXY(current.segments[j-2], current.segments[j-1])  //testing  
  	 		  
+ 	 		  	//alert("setting XY of \n" + downstream.toString() + "\n\n\n" + upstream.toString())
  	 			downstream.setXY(current.segments[0], current.segments[1]);  //normal
 				upstream.setXY(current.segments[j-2], current.segments[j-1]) //normal  
  
@@ -772,7 +778,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			root = this.networkSource[index];
 			// tmp comment alert("setting up another branch! \n" + root);
 			root.addDrawingNodes(0); 
-			alert("node with " + root.passability.toString() + " passability\n" + root.toString()) 
+			//alert("node with " + root.passability.toString() + " passability\n" + root.toString()) 
 			root.calculateAccessibility(1.0);
 			root.setColors();
 			root.nodeDrawing.attr({r:2/*, fill:"blue"*/});
@@ -796,6 +802,9 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		viewBox[2] = 60;
 		viewBox[3] = 60;
 		refreshViewBox();*/
+
+		alert("setup complete!")
+		console.log("setup complete!")
 	}  
 
 
@@ -1061,21 +1070,19 @@ $(window).load(function () {
 //=========================End of Mouse Events ==========================================
 //=======================================================================================	
 
-
-s 
 	 
 paper = new Raphael(document.getElementById('canvas'), width, height); 
 	/*paper.drag(function(dx, dy, x, y, dragMove){console.log("moving!: change x,y" + dx + "," + dy)},
 		function(x, y, dragStart){console.log("start of mouse drag!!!!!!!!!!!!!"); alert("start drag")},
 		function(dragEnd){console.log("finished mouse drag!!!!!!!!!!!!"); alert("stopped drag")});
-*/
+	*/
 
-// paper.canvas.mousemove(function(e) {
-//   var offset = $(this).offset(), offsetX = e.pageX - offset.left, offsetY = e.pageY - offset.top;
-//   //do something with offsetX and offsetY
-//   console.log("moving");
+	// paper.canvas.mousemove(function(e) {
+	//   var offset = $(this).offset(), offsetX = e.pageX - offset.left, offsetY = e.pageY - offset.top;
+	//   //do something with offsetX and offsetY
+	//   console.log("moving");
 
-// });
+	// });
 
 	$(document).keydown(function(event) {
 	

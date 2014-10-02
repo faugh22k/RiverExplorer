@@ -1140,6 +1140,7 @@ function main(){
 
 		/* since we are using jquery, the event is already normalize */
 		var arrowKeys = {"left": 37, "up": 38, "right": 39, "down": 40, "plus": 187, "minus": 189};
+		var irrelevantKey = false
 		if(event.keyCode == arrowKeys["left"]) {
 		translate(10, 0)
 		}
@@ -1157,10 +1158,16 @@ function main(){
 		} 
 		else if(event.keyCode == arrowKeys["minus"]){
 			zoom(0.9)
+		} else {
+			irrelevantKey = true
 		}
 	
+
+		if (!irrelevantKey){
+			event.preventDefault();
+		}
 		/* we want to prevent document scrolling when pressing the arrows: */
-		event.preventDefault();
+		//
 	
 	});
 	

@@ -100,3 +100,9 @@ div.center{
    border-top-color: #1b435e;
    background: #1b435e;
    }
+
+div.right{
+	margin-left: auto;
+	margin-right: 0;
+	width:35%;
+} 

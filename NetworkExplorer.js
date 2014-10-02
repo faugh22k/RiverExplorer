@@ -12,7 +12,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	// 1 crossing 2 dam
 	this.barrierType = barrierType;
 	this.possibleActions = possibleActions;
-	this.passability = passability; // switch to see colors 0.93;  
+	this.passability = passability; // switch to see colors 0.93;   
 	this.passabilityImprovement = 0.0;
 	this.improvedPassability = this.passability;    
 	this.x = x;
@@ -202,7 +202,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			//// tmp comment alert("selected"); 
 			// color the node  
 			if (!this.isBarrier){
-				this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".80"});
+				this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".70"});
 			} else {
 				if (this.currentAction == -1){
 					this.nodeDrawing.attr({fill: "#78c44c" /*"#6bba4e"/*"#84cd4a"/*"#60b150"/*"#40AE26"/*"#669900"/*"#33B533"*/, stroke:"transparent","opacity":"0.85"/*"1.0"*/});

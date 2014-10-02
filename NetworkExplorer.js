@@ -12,7 +12,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	// 1 crossing 2 dam
 	this.barrierType = barrierType;
 	this.possibleActions = possibleActions;
-	this.passability = passability; // switch to see colors 0.93;   
+	this.passability = passability; // switch to see colors 0.93;  
 	this.passabilityImprovement = 0.0;
 	this.improvedPassability = this.passability;    
 	this.x = x;
@@ -30,7 +30,6 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	this.needsClickListener = true;
 	this.currentAction = -1;
 	this.previousHabitat = -1;
-	this.originalHabitat = -1;
 	this.currentHabitat = -1;  
 }
   
@@ -203,7 +202,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			//// tmp comment alert("selected"); 
 			// color the node  
 			if (!this.isBarrier){
-				this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".70"});
+				this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".80"});
 			} else {
 				if (this.currentAction == -1){
 					this.nodeDrawing.attr({fill: "#78c44c" /*"#6bba4e"/*"#84cd4a"/*"#60b150"/*"#40AE26"/*"#669900"/*"#33B533"*/, stroke:"transparent","opacity":"0.85"/*"1.0"*/});
@@ -251,7 +250,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	 * Calculate the habitat for the node by taking to sum
 	 * of each segment's accessibility times the length. 
 	 **/ 
-	Node.prototype.calculateHabitat = function(isOriginal){
+	Node.prototype.calculateHabitat = function(){
 		this.previousHabitat = this.currentHabitat
 
 		habitat = 0; 
@@ -263,14 +262,12 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 				habitat += this.children[2][index] * this.children[1][index];
 
 				// add the habitat of the child
-				habitat += this.children[0][index].calculateHabitat(isOriginal);
+				habitat += this.children[0][index].calculateHabitat();
 			} else {
 				alert("for some reason, an entry in children[0]" + index.toString() + " is null in calculateHabitat. \n\n" + this.toString())
 			}
 		}
 
-		if (isOriginal)
-			this.originalHabitat = habitat
 		this.currentHabitat = habitat;
 		return habitat;
 	},
@@ -342,13 +339,6 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		alert("in updateSelected. calledFrom \n" + calledFrom.toString());  
 		dataManager.markAllSelected(calledFrom); 
 		dataManager.partiallyDeselect(calledFrom.parent, calledFrom); 
-
-		// deselect node that are parts of unconnected networks. 
-		for (node in this.networkSource){
-			if (!node.partiallySelected && !node.selected){
-				dataManager.deselect(node);
-			}
-		}
 
 		dataManager.selectedNode = calledFrom;
 		dataManager.updateSolution() 
@@ -437,19 +427,6 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		}
 	},
 
-	DataManager.prototype.createSummary = function(){
-		original = parseInt(this.selectedNode.originalHabitat)
-		current = parseInt(this.selectedNode.currentHabitat)
-		gain = current - original
-
-		output = "current budget: " + dataManager.budget + "<br>"
-		output += "<br>" 
-		output += "orginal habitat: " + this.selectedNode.originalHabitat + "<br>"  
-		output += "current habitat: " + this.selectedNode.currentHabitat + "<br>"   
-		output += "habitat gain: " + gain.toString()   
-		return output
-	}
-
 	/**
 	 * Finds the solution for the current budget and selected portion
 	 * and traverses the network to update the passability of the barriers
@@ -480,10 +457,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		alert("colors updated")
 
 		// calculate accessible habitat
-		dataManager.selectedNode.calculateHabitat(false)
+		dataManager.selectedNode.calculateHabitat()
 		alert("current habitat:  " + dataManager.selectedNode.currentHabitat.toString() + "\nprevious habitat: " + dataManager.selectedNode.previousHabitat.toString()) 
-
-		summary.innerHTML = dataManager.createSummary() 
 	}, 
 
 	/**
@@ -512,7 +487,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			if (!isNaN(cost) && ((closestCost == null && cost <= dataManager.budget) || ((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
 				closestEntry = entry
 				closestCost = cost
-				//alert(closestCost + " cost is closer to our budget")
+				alert(closestCost + " cost is closer to our budget")
 				foundAnEntry = true
 			}
 		}
@@ -545,16 +520,16 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		// get the node from the dictionary of all nodes   
 		currentNode = dataManager.allNodes[start.nodeID];
 		action = start.actionID;
-		//solution ** alert("action: " + action + "    current node: \n" + currentNode.toString())
+		alert("action: " + action + "    current node: \n" + currentNode.toString())
 		currentNode.setAction(action)   
 
 		//alert("taking action " + action + " at \n" + currentNode.toString() + "\nopt entry: \n" + start)
 
-		//solution ** alert("start: " + start + "\n\ncurrentNode: " + currentNode);
+		alert("start: " + start + "\n\ncurrentNode: " + currentNode);
 
 		//alert("the id of the child is: " +  start["firstChildID"] + "\nthe value of the child is: " +  start["valueChild"])
 		if (start["firstChildID"] != "-1" && Number(start["valueChild"]) > 0){ 
-			// solution ** alert("following solution to actions spreading out from child!")
+			alert("following solution to actions spreading out from child!")
 			child = dataManager.OPT[start["firstChildID"]][start["valueChild"]]
 			dataManager.followSolution(child, true)
 		} 
@@ -563,7 +538,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			alert("the id of the sibling is: " +  start["siblingID"] + "\nthe value of the sibling is: " +  start["siblingChild"])
 		}*/
 		if(includeSibling && [start["siblingID"]] != "-1" && Number(start["valueSibling"]) > 0){ 
-			//solution ** alert("following solution to actions spreading out from sibling!")
+			alert("following solution to actions spreading out from sibling!")
 			sibling = dataManager.OPT[start["siblingID"]][start["valueSibling"]]
 			dataManager.followSolution(sibling, true)
 		}
@@ -666,13 +641,13 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
  
  		// parsed json
 		info = data;
-		
+
 		streams = info.streamInfo; 
 		nodes = info.nodeInfo;  
-		this.OPT = info.optInfo;  
+		this.OPT = info.optInfo; 
 		dams = info.actions.dams
 		crossings = info.actions.crossings
-		//alert("action options for: \ndams = " + dams + "\ncrossings = " + crossings)
+		alert("action options for: \ndams = " + dams + "\ncrossings = " + crossings)
  
 		viewBox[0] = 5;
 		viewBox[1] = 5;
@@ -795,7 +770,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			}
 		}
 
-		alert("\nfound " + this.networkSource.length + " roots\n");
+		console.log("\nfound " + this.networkSource.length + " roots\n");
 		//console.log("root " + root); 
 
 		// finish setting up each network
@@ -805,10 +780,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			root.addDrawingNodes(0); 
 			//alert("node with " + root.passability.toString() + " passability\n" + root.toString()) 
 			root.calculateAccessibility(1.0);
-			root.calculateHabitat(true);
 			root.setColors();
 			root.nodeDrawing.attr({r:2/*, fill:"blue"*/});
-			this.selectedNode = root;
 			
 		}
 
@@ -821,10 +794,14 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		//root.nodeDrawing.attr({fill: "blue"/*, r:"15"*/}); 
 		//this.networkSource = root; 
 		this.allNodes = allNodes; 
-		//summary.innerHTML = reportString()
-		summary.innerHTML = this.createSummary()  
 
-		this.checkOPT(); 
+		this.checkOPT();
+
+		/*viewBox[0] = 5;
+		viewBox[1] = 5;
+		viewBox[2] = 60;
+		viewBox[3] = 60;
+		refreshViewBox();*/
 
 		alert("setup complete!")
 		console.log("setup complete!")
@@ -856,7 +833,6 @@ var slider;
 var panInput;
 var zoomInput;
 var information;
-var summary;
 var paper;
 var set;
 var circle;
@@ -891,7 +867,19 @@ function translateEvent(){
 	var xChange = Number(arguments[0]);
 	var yChange = Number(arguments[1]);
 	
-	translate(xChange, yChange); 
+	translate(xChange, yChange);
+	
+	// NaN: not a number
+	// NaN does not equal itself, so isNaN is needed to make sure there are 
+	// 2 valid numbers. 
+	/* moved to translate()
+	if (!isNaN(xChange) && !isNaN(yChange)) {  
+		viewBox[0] += xChange;
+		viewBox[1] += yChange;
+		viewBox[2] += xChange;
+		viewBox[3] += yChange;
+		refreshViewBox();
+	};*/
 }
 
 function translate(xChange, yChange){
@@ -915,9 +903,33 @@ function translate(xChange, yChange){
 function zoomEvent(){ 
 	var factor = Number(zoomInput.value);
 	
-	zoom(factor) 
+	zoom(factor)
+	//if(!isNaN(factor)){
+	//	xRange = viewBox[2] - viewBox[0];
+	//	yRange = viewBox[3] - viewBox[1];
+
+	//	xRange = xRange / factor; 
+	//	viewBox[2] = viewBox[0] + xRange;
+	//	yRange = yRange / factor;
+	//	viewBox[3] = viewBox[1] + yRange;
+	//	refreshViewBox();
+
+		/*width *= factor;
+		height *= factor;
+		// Change the widht and the height attributes manually through DOM
+		$('#canvas').attr('width', width).attr('height', height); */
+	//}	 
 }
 
+function zoomIn()
+{
+	zoom(1.1);
+}
+
+function zoomOut()
+{
+	zoom(0.9);
+}
 function zoom(factor){
 	if(!isNaN(factor)){
 		xRange = viewBox[2] - viewBox[0];
@@ -994,13 +1006,23 @@ function main(){
 
 
 
-	//=======================================================================================
-	//========================= Mouse Events ================================================
-	//=======================================================================================
+//=======================================================================================
+//========================= Mouse Events ================================================
+//=======================================================================================
 
-	// On window load, add a bunch of listeners for mouse events
-	$(window).load(function () {
+// On window load, add a bunch of listeners for mouse events
+$(window).load(function () {
 
+	    xRange = viewBox[2] - viewBox[0];
+		yRange = viewBox[3] - viewBox[1];
+
+		var xScale = xRange/3000;
+		var yScale = yRange/3000;
+
+		var xChange = 0;
+		var yChange = 0;
+		var currentx = 0;
+		var currenty = 0;
         var canvas = document.getElementById("canvas");
 
         // Action performed when mouse button if pressed down
@@ -1012,6 +1034,8 @@ function main(){
             mouseDownX = event.pageX;
             mouseDownY = event.pageY;
 
+
+
             console.log("initial position :" + mouseDownX + " and " + mouseDownY);
         };
 
@@ -1019,6 +1043,7 @@ function main(){
         var mouseUpListener = function(event)
         {
         	console.log("mouse up");
+        	
         	mouseIsDown = false;
         }
 
@@ -1028,15 +1053,23 @@ function main(){
         	// Do nothing unless dragging
         	if(mouseIsDown)
         	{
-        		console.log("dragging");
+        		console.log("dragging");  
 
-        		var currentx = event.pageX;
-        	    var currenty = event.pageY;
+        		currentx = event.pageX ;
+        	    currenty = event.pageY ;
 
-        	    translate(0.5*(currentx - mouseDownX), 0.5*(currenty - mouseDownY));
-
+        	    xChange = currentx - mouseDownX;
+        	    yChange = currenty - mouseDownY;
         	    mouseDownX = currentx;
         	    mouseDownY = currenty;
+
+        	translate(xChange*xScale*0.5,yChange*yScale*0.5);
+
+            console.log("xChange:" + xChange + " and yChange   " + yChange);
+                        console.log("viewbox xrange   :" + xRange + " and yRange   " + yRange);
+
+
+
         	}
         }
 
@@ -1056,19 +1089,40 @@ function main(){
 
         }
 
-        // Adding all the listeners for mouse events: down, up, move, scroll
+        var mouseDragListener = function(event)
+        {
+        	console.log("dragging");
+        		var currentx = event.pageX;
+        	    var currenty = event.pageY;
+
+        	    var xChange = currentx - mouseDownX;
+        	    var yChange = currenty - mouseDownY;
+        	    console.log("xChange  :" + xChange + " and \n yChange   :" + yChange);
+      		    console.log("current position :" + currentx + " and " + currenty);
+      		    console.log("xScale  :" + xScale + " and yScale : " + yScale);
+  
+        	    translate(xChange-w,yChange-h);
+
+        	    mouseDownX = currentx;
+        	    mouseDownY = currenty;
+
+        }
+
+        //Adding all the listeners for mouse events: down, up, move, scroll
         canvas.addEventListener("mousedown",mouseDownListener,false);
         canvas.addEventListener("mouseup", mouseUpListener,false);
         canvas.addEventListener("mousemove", mouseMoveListener, false);
-        canvas.addEventListener('mousewheel', mouseZoomListener, false);      
+        canvas.addEventListener('mousewheel', mouseZoomListener, false); 
+        //canvas.addEventListener('mousedrag', mouseDragListener, false);
+
     });
 
-	//=======================================================================================
-	//=========================End of Mouse Events ==========================================
-	//=======================================================================================	
+//=======================================================================================
+//=========================End of Mouse Events ==========================================
+//=======================================================================================	
 
 	 
-	paper = new Raphael(document.getElementById('canvas'), width, height); 
+paper = new Raphael(document.getElementById('canvas'), width, height); 
 	/*paper.drag(function(dx, dy, x, y, dragMove){console.log("moving!: change x,y" + dx + "," + dy)},
 		function(x, y, dragStart){console.log("start of mouse drag!!!!!!!!!!!!!"); alert("start drag")},
 		function(dragEnd){console.log("finished mouse drag!!!!!!!!!!!!"); alert("stopped drag")});
@@ -1080,6 +1134,9 @@ function main(){
 	//   console.log("moving");
 
 	// });
+
+    // Setting preserveAspectRatio to 'none' lets you stretch the SVG
+	paper.canvas.setAttribute('preserveAspectRatio', 'none');
 
 	$(document).keydown(function(event) {
 	
@@ -1124,6 +1181,8 @@ function main(){
 	// add click listeners to the zoom and pan buttons
 	document.getElementById("pan").onclick = translateEvent; 
 	document.getElementById("zoom").onclick = zoomEvent;  
+	document.getElementById("zoomIn").onclick = zoomIn; 
+	document.getElementById("zoomOut").onclick = zoomOut;  
 
 	// stores reference to the budget slider and adds a change listener
 	slider = document.getElementById("budgetSlider");
@@ -1135,18 +1194,20 @@ function main(){
 	zoomInput = document.getElementById("zoomInput");
 
 	information = document.getElementById("information");
-	summary = document.getElementById("summary");
 
 	// initializes budget value. 
 	slider.value = 0;
-	slider.max = 500;
+	slider.max = 32000000;
 	dataManager.budget = slider.value;
 
-	// change the source file for the data
-	//$.get("BarrierAndStreamInfoOpt.json", function(data){ 
-	$.get("BarrierAndStreamInfoOptNetworkReduced2.json", function(data){   
+	// change data source **
+	//$.get("BarrierAndStreamInfo.json", dataManager.init);
+	//$.get("BarrierAndStreamInfoOptNetwork.json", function(data){
+	//$.get("BarrierAndStreamInfoOptNetworkReduced.json", function(data){  
+	$.get("BarrierAndStreamInfoOptNetworkReduced2.json", function(data){    
+	//$.get("BarrierAndStreamInfoReduced.json", function(data){
+	//$.get("BarrierAndStreamInfoSuperReduced.json", function(data){
 	//$.get("BarrierAndStreamInfo.json", function(data){
-	//$.get("BarrierAndStreamInfoSubNetwork.json", function(data){	
 		dataManager.init(data);
 		dataManager.addEventsToAllBranches(dataManager.networkSource, dataManager.updateSelected);
 		// tmp comment alert("finished setting things up!")

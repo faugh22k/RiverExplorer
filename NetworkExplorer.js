@@ -156,14 +156,22 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	 * about passability, accessibility, and selection status.
 	 **/
 	Node.prototype.reportString = function (){
-		output = "ID " + this.id + "\n     ";    
-		output += "\npassability: " + this.improvedPassability.toString(); 
-		output += "\nis a Barrier: " + this.isBarrier; 
-		if(this.currentAction != -1){
-			output += "\naction taken: " + this.currentAction; 
+		output = "ID " + this.id + "<br>";    
+		if (this.isBarrier){ 
+			if (this.barrierType == 1){
+				output += "Crossing <br>";
+			} else if (this.barrierType == 2){
+				output += "Dam <br>";
+			}
+			output += "passability: " + this.passability.toFixed(3) + "<br>";  
+			if(this.currentAction != -1){
+				output += "\naction taken: " + this.currentAction + "<br>"; 
+				output += "improved passability: " + this.improvedPassability.toFixed(3) + "<br>";   
+			}
 		}
+		
 		if (this.children[2] != undefined && this.children[2][0] != undefined){
-			output += "\n\naccessibility going out: " + this.children[2][0];
+			output += "\n\naccessibility going out: " + this.children[2][0].toFixed(3);
 		}
 		return output;
 	},
@@ -444,8 +452,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
 		output = "current budget: " + dataManager.budget + "<br>"
 		output += "<br>" 
-		output += "orginal habitat: " + this.selectedNode.originalHabitat + "<br>"  
-		output += "current habitat: " + this.selectedNode.currentHabitat + "<br>"   
+		output += "orginal habitat: " + (this.selectedNode.originalHabitat).toFixed(2) + "<br>"  
+		output += "current habitat: " + (this.selectedNode.currentHabitat).toFixed(2) + "<br>"   
 		output += "habitat gain: " + gain.toString()   
 		return output
 	}
@@ -852,9 +860,7 @@ var dataManager;
 var canvas;
 var context; 
 var budget;
-var slider;
-var panInput;
-var zoomInput;
+var slider; 
 var information;
 var summary;
 var paper;
@@ -872,28 +878,11 @@ var mouseIsDown = false;
 var mouseDownX;
 var mouseDownY;
 var mouseUpX;
-var mouseUpY;
+var mouseUpY; 
 
-/**
- * Called when pan button is clicked.
- * If two valid numbers are within the pan text field ("x y")
- * translates the specified the amount. 
+/** 
+ * If two valid numbers are given, translates the specified the amount. 
  **/
-function translateEvent(){ 
-	var arguments = panInput.value.split(" ");
-
-	// the length is 1 if there are 2 indices in the array 
-	if(arguments.length < 1){
-		return;
-	}
-
-	// parses a number, which may or may not include a decimal
-	var xChange = Number(arguments[0]);
-	var yChange = Number(arguments[1]);
-	
-	translate(xChange, yChange); 
-}
-
 function translate(xChange, yChange){
 	// NaN: not a number
 	// NaN does not equal itself, so isNaN is needed to make sure there are 
@@ -907,16 +896,7 @@ function translate(xChange, yChange){
 	};
 }
 
-/** 
- * Called when the zoom button is clicked. 
- * If the zoom text field contains a valid number, scales
- * the canvas the specified amount. 
- **/ 
-function zoomEvent(){ 
-	var factor = Number(zoomInput.value);
-	
-	zoom(factor) 
-}
+ 
 
 function zoomIn()
 {
@@ -1182,9 +1162,7 @@ function main(){
 	//dataManager.init();
 
 
-	// add click listeners to the zoom and pan buttons
-	document.getElementById("pan").onclick = translateEvent; 
-	document.getElementById("zoom").onclick = zoomEvent;  
+	// add click listeners to the zoom and pan buttons 
 	document.getElementById("zoomIn").onclick = zoomIn; 
 	document.getElementById("zoomOut").onclick = zoomOut;  
 
@@ -1193,10 +1171,7 @@ function main(){
 	slider.onchange = updateBudget;
 	//// tmp comment alert("after slider");
 
-	// stores references to the zoom and pan text fields 
-	panInput = document.getElementById("panInput");
-	zoomInput = document.getElementById("zoomInput");
-
+	// stores references to the information output areas  
 	information = document.getElementById("information");
 	summary = document.getElementById("summary");
 

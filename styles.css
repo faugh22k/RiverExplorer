@@ -10,8 +10,9 @@ body {
     /*background: #F2F2F2;*/
     /*background: #323232; /*#292929;*/
     background: #3D3D3D;
+    color: #3d8fb7;/* #1975D1; #228493;*/
 
-} 
+}  
 
 #canvas {
 	/*background:#292929; */
@@ -19,13 +20,44 @@ body {
 	margin-right: auto;
 	width: 70%;
 }
-
+      
 div.center{  
+  /*background: #FFFF66;   */
 	margin-left: auto;
 	margin-right: auto;
-	width: 35%;
+  margin-bottom: 20px;
+	width: 13%;
+  /*position: absolute;
+    left: 500px;
+    bottom: 20px;*/
 } 
 
+
+div.right{
+  /*background: #FFFF66;
+  /*margin-left: auto;
+  margin-right: 0px; 
+  width:20%;*/
+  position: absolute;
+    right: 50px;
+    bottom: 20px;
+}  
+
+div.left{
+  /*background: #FFFF66;
+  /*margin-left: 25px;
+  margin-right: auto;
+  margin-bottom: 25px;
+  height:20%;
+  width:35%;*/
+  position: absolute;
+    left: 50px;
+    bottom: 20px;
+
+} 
+
+
+   
 #button1{
 	border: none;
 	position: absolute;
@@ -101,8 +133,3 @@ div.center{
    background: #1b435e;
    }
 
-div.right{
-	margin-left: auto;
-	margin-right: 0;
-	width:35%;
-} 

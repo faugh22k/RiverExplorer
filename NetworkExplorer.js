@@ -349,12 +349,15 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	DataManager.prototype.updateSelected = function (calledFrom){ 
 		alert("in updateSelected. calledFrom \n" + calledFrom.toString());  
 		dataManager.markAllSelected(calledFrom); 
-		dataManager.partiallyDeselect(calledFrom.parent, calledFrom); 
+		// the root of the network containing calledFrom is returned 
+		activeRoot = dataManager.partiallyDeselect(calledFrom.parent, calledFrom); 
 
-		// deselect node that are parts of unconnected networks. 
-		for (node in this.networkSource){
-			if (!node.partiallySelected && !node.selected){
-				dataManager.deselect(node);
+		// deselect nodes that are parts of unconnected networks. 
+		for (index in dataManager.networkSource){ 
+			root = dataManager.networkSource[index]
+			//alert("changing colors of other networks " + root)
+			if (root != activeRoot){
+				dataManager.deselect(root);
 			}
 		}
 
@@ -404,8 +407,10 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		 	}
 		 } 
 
-		 this.partiallyDeselect(current.parent, current);
-		
+		if (current.parent != null){ 
+			return this.partiallyDeselect(current.parent, current);  
+		}
+		return current;
 	},
 
 	/**
@@ -646,6 +651,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				dataManager.updateSelected(node);
 			});
 
+			// adds hover functions: the first called during hover; the second,
+			// when hover stops.   
 			node.nodeDrawing.hover(function(){
 				information.innerHTML = node.reportString()   
 				//information.text = "testing"
@@ -756,6 +763,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				//// tmp comment alert("adding path " + downstreamID + " -> " + upstreamID + " \n" + pathDirections)
 				path = paper.path(pathDirections);  
 				path.attr({"stroke-width":2});
+				path.attr({stroke:"#FF4D4D"}); 
 
 
 				//console.log(downstreamID + " -> " + upstreamID); 
@@ -805,22 +813,24 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
 		alert("\nfound " + this.networkSource.length + " roots\n");
 		//console.log("root " + root); 
-
+ 
 		// finish setting up each network
-		for (index in this.networkSource){
+		for (index in this.networkSource){ 
 			root = this.networkSource[index];
 			// tmp comment alert("setting up another branch! \n" + root);
 			root.addDrawingNodes(0); 
 			//alert("node with " + root.passability.toString() + " passability\n" + root.toString()) 
 			root.calculateAccessibility(1.0);
 			root.calculateHabitat(true);
+			this.deselect(root)
 			root.setColors();
 			root.nodeDrawing.attr({r:2/*, fill:"blue"*/});
-			this.selectedNode = root;
+			this.selectedNode = root; 
 			
 		}
 
-
+		this.markAllSelected(this.selectedNode)
+		this.selectedNode.setColors();
 		//root.addDrawingNodes(0);
 		// tmp comment alert("added the drawings for the nodes!!!")
 		//this.addEvents(root);

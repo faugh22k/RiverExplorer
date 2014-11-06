@@ -32,6 +32,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	this.previousHabitat = -1;
 	this.originalHabitat = -1;
 	this.currentHabitat = -1;  
+	this.requireRepaint = true;
 }
   
 
@@ -39,18 +40,28 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	 * Adds a child connection to the node. 
 	 **/
 	Node.prototype.addChild = function (node, length, accessibility, streamSegments){
-		for (index in this.children){
+		//temporary
+		/*for (index in this.children){
 			if (this.children[0][index] === node){
 				// tmp error alert alert("tried to add a child twice!")
 				return;
 			}
-		}
+		}*/
 
 		this.children[0].push(node);
 		this.children[1].push(length);
 		this.children[2].push(accessibility); 
 		this.children[3].push(streamSegments);
 		node.parent = this;
+	}, 
+
+	Node.prototype.hasChild = function (node){
+		for (index in this.children){
+			if (this.children[0][index] === node){
+				return true;
+			}
+		}
+		return false;
 	}, 
 
 	/**
@@ -75,7 +86,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			this.needsNodeDrawing = false;
 			this.nodeDrawing = paper.circle(this.x,this.y,1);
 			this.nodeDrawing.attr({fill: "green"});
-			console.log("adding drawing for \n" + this.toString() + "\ncount = " + count);
+			//tmpconsole.log("adding drawing for \n" + this.toString() + "\ncount = " + count);
 		} 
 		
 		if (count >= 2000){
@@ -101,22 +112,33 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	 * improvedPassability accordingly. 
 	 **/
 	Node.prototype.setAction = function(action){  
-		this.currentAction = action;
+		this.currentAction = action 
+		previousPassability = this.improvedPassability 
 
 		if (action == -1){
 			this.improvedPassability = this.passability
 			this.currentAction = -1
-			return;
+			//return;
 		}
 
-		this.improvedPassability = this.possibleActions[action].improvedPassability;
-		this.currentAction = action
-		this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".90"});
-		// tmp testing thing!!!!!!!!!!!!!!!!!!!!!!!!!! switch back! todo! *****
-		/*if (this.improvedPassability < 0.5){
-			this.improvedPassability = 0.9
-		}*/
-		alert("original passability: " + this.passability + "\nnew passability: " + this.improvedPassability)
+		else if (this.possibleActions == null){
+			console.log("problem: tried to set action " + action + " of node " + this.toString()
+				+ "\n\npossibleActions = " + this.possibleActions)
+			this.improvedPassability = this.passability
+			this.currentAction = -1
+			//return
+		}
+
+		else { 
+
+			this.improvedPassability = this.possibleActions[action].improvedPassability 
+			this.currentAction = action
+			this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".90"})  
+		} 
+
+		if (previousPassability != this.improvedPassability){
+			this.requireRepaint = true
+		}
 
 	},
 
@@ -176,71 +198,93 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		return output;
 	},
 
+	Node.prototype.setSelection = function (selected){
+		if (this.selected != selected){
+			this.requireRepaint = true
+			this.selected = selected
+		}
+	},
+
+	Node.prototype.setPartialSelection = function (partiallySelected){
+		if (this.partiallySelected != partiallySelected){
+			this.requireRepaint = true
+			this.partiallySelected = partiallySelected 
+		}
+	},
+
 	/**
 	 * Set the colors of the node drawing and the colors of stream segments
 	 * leading to the child nodes; then call the function for all descendants. 
 	 **/
 	Node.prototype.setColors = function (){ 
+		if (!this.selected && !this.partiallySelected && !this.requireRepaint){
+			return
+		}
+
 		//66CCFF blue
 		if (!this.selected){ 
-			if(this.partiallySelected){
-				//// tmp comment alert("path to root");
-				// color the node
-				if(!this.isBarrier){
-					this.nodeDrawing.attr({fill: "#003366"/*"#33B533"*/, stroke:"transparent","opacity":".55"});
-					//this.nodeDrawing.attr({fill: "green", stroke:"transparent","opacity":".50"});
-				} else {
-					this.nodeDrawing.attr({fill: "#669900"/*"green"*/, stroke:"transparent","opacity":".50"});
-					//this.nodeDrawing.attr({fill: "#33B533", stroke:"transparent","opacity":".50"});
-				}
-			} else {
-				//// tmp comment alert("not selected"); D4D4D4
-				//this.nodeDrawing.attr({fill: "#6600FF", stroke:"transparent","opacity":".30"});  
-				this.nodeDrawing.attr({fill: "#D4D4D4", stroke:"transparent","opacity":".30"});  
-			} 
-
-			for (index in this.children[0]){
-				if(this.partiallySelected && (this.children[0][index].partiallySelected || this.children[0][index].selected)){
-					this.children[3][index].attr({stroke:"black"}); 
-				} else {
-					//this.children[3][index].attr({stroke:"#7575A3"}); // grey
-					this.children[3][index].attr({stroke:"#A0A0A0"}); // grey
-				}  
-			} 
+			this.colorUnselected() 
 		} else { 
-			//// tmp comment alert("selected"); 
-			// color the node  
-			if (!this.isBarrier){
-				this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".70"});
-			} else {
-				if (this.currentAction == -1){
-					this.nodeDrawing.attr({fill: "#78c44c" /*"#6bba4e"/*"#84cd4a"/*"#60b150"/*"#40AE26"/*"#669900"/*"#33B533"*/, stroke:"transparent","opacity":"0.85"/*"1.0"*/});
-				} else {
-					this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".85"});
-				}
-			}
-			// color the paths to the children (river segments)
-			for (index in this.children[0]){
-				/*colorString = "" 
-				accessibility = this.children[2][index]
-				accessibilityIndex = accessibility * 10
-				accessibilityIndex = Math.floor(accessibilityIndex)
-				if (accessibilityIndex > 10){
-					accessibilityIndex = 10;
-				}
-				//alert("index: " + accessibilityIndex + "\naccessibility: " + accessibility + "\npassability: " + this.passability)
-				colorString = colors[accessibilityIndex]*/
-				//colorString = "#FFFF66" 
-				//tmp comment alert("setting color of node with " + this.passability + "\n" + this.toString());
-				colorString = this.getColor(this.children[2][index])
-				this.children[3][index].attr({stroke:colorString}); 
-			}
+			this.colorSelected() 
 		}
 
 		for (index in this.children[0]){
 			this.children[0][index].setColors();  
 		}		 
+		this.requireRepaint = false
 	},  
+
+	Node.prototype.colorSelected = function() {
+		if (!this.requireRepaint){ 
+			return  
+		}
+
+		// selected
+		// color the node  
+		if (!this.isBarrier){
+			this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".70"});
+		} else {
+			if (this.currentAction == -1){
+				this.nodeDrawing.attr({fill: "#78c44c" /*"#6bba4e"/*"#84cd4a"/*"#60b150"/*"#40AE26"/*"#669900"/*"#33B533"*/, stroke:"transparent","opacity":"0.85"/*"1.0"*/});
+			} else {
+				this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".85"});
+			}
+		}
+		// color the paths to the children (river segments)
+		for (index in this.children[0]){ 
+			colorString = this.getColor(this.children[2][index])
+			this.children[3][index].attr({stroke:colorString}); 
+		}
+	},
+
+	Node.prototype.colorUnselected = function() {
+		if (!this.requireRepaint){ 
+			return    
+		} 
+
+		if(this.partiallySelected){
+			// on the path to the root
+			// color the node
+			if(!this.isBarrier){
+				this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".55"}); 
+			} else {
+				this.nodeDrawing.attr({fill: "#669900", stroke:"transparent","opacity":".50"}); 
+			}
+		} else {
+			// unselected
+			this.nodeDrawing.attr({fill: "#D4D4D4", stroke:"transparent","opacity":".30"});  
+		} 
+ 
+		for (index in this.children[0]){  
+			// if this and the child are partiallySelected, color the stream black (path to root)
+			if(this.partiallySelected && (this.children[0][index].partiallySelected || this.children[0][index].selected)){
+				this.children[3][index].attr({stroke:"black"}); 
+			} else { 
+				this.children[3][index].attr({stroke:"#A0A0A0"}); // grey
+			}  
+		} 
+	},
+
  
  	/**
  	 * Get the appropriate color for a stream segment. 
@@ -289,6 +333,13 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	 * passability. Then call itself for the node's descendants.  
 	 **/ 
 	Node.prototype.calculateAccessibility = function(comingIn){
+		originalAccessibility = -1
+		compare = false
+		if (this.children != null && this.children[2][0] != null){
+			originalAccessibility = this.children[2][0]
+			compare = true
+		}
+
 		//alert("calculating accessibility. \ncomingIn = " + comingIn + "\npassability = " + this.passability + "\nimprovedPassability = " + this.improvedPassability + "\n\ngoing out should be: " + (comingIn*this.improvedPassability));
 		if(this.isBarrier){
 
@@ -298,13 +349,18 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			this.nodeDrawing.attr({fill: "#FF4500"/*"#33B533"*/, stroke:"transparent","opacity":".55"});
 			//alert("passability: " + this.improvedPassability + "\ncoming in: " + comingIn +  	"\nheading out:" + accessibility + "\n\n" + this.toString());  
 			this.nodeDrawing.attr({fill: "#1e90ff"/*"#33B533"*/, stroke:"transparent","opacity":".55"});
-			for (index in this.children[0]){ 
-				this.children[3][index].attr({stroke:colorString});  
-			} 
+			//for (index in this.children[0]){ 
+			//	this.children[3][index].attr({stroke:colorString});  
+			//} 
 		} else {
 			//alert("(not a barrier)\npassability: " + this.improvedPassability + "\ncoming in: " + comingIn +  	"\nheading out:" + accessibility); 
 			accessibility = comingIn;
 		}
+
+		if (compare && originalAccessibility != accessibility){
+			this.requireRepaint = true
+		}
+
 		for (index in this.children[0]){
 			this.children[2][index] = accessibility;   
 			//this.children[0][index].calculateAccessibility(accessibility); 
@@ -374,7 +430,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		}
 		
 
-		current.selected = true     
+		//current.selected = true     
+		current.setSelection(true)
 
 		if (current.children != null){
 			for (index in current.children[0]){
@@ -397,8 +454,10 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			return null;
 		}
 
-		current.selected = false;
-		current.partiallySelected = true; 
+		//current.selected = false;
+		//current.partiallySelected = true; 
+		current.setSelection(false)  
+		current.setPartialSelection(true)  
 
 		 for (index in current.children[0]){  
 		 	nextNode = current.children[0][index];
@@ -421,8 +480,10 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			return;
 		}
 		
-		current.selected = false;
-		current.partiallySelected = false; 
+		//current.selected = false;
+		//current.partiallySelected = false; 
+		current.setSelection(false)  
+		current.setPartialSelection(false)  
 		
 		if (current.children != null){ 
 			for (index in current.children[0]){
@@ -691,22 +752,25 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
  
 		viewBox[0] = 5;
 		viewBox[1] = 5;
-		viewBox[2] = 200;//130;//800; //150;  
-		viewBox[3] = 200;//130;//500; //150;   
+		viewBox[2] = 500;//200;//130;//800; //150;  
+		viewBox[3] = 500;//200;//130;//500; //150;   
 		refreshViewBox();   
  
-		/*console.log(nodes)
-		console.log(streams)
-		console.log(info)*/
+		/*//tmpconsole.log(nodes)
+		//tmpconsole.log(streams)
+		//tmpconsole.log(info)*/  
 
-		// read in all the nodes, creat objects for them, and store them into a dictionary. 
+		// read in all the nodes, create objects for them, and store them into a dictionary. 
  		root = null;
 		allNodes = {};
 		numberNodes = 0;
 		for (index in nodes){
 			current = nodes[index];
-			currentID = current.ID;
-			//console.log("current barrier id = " + currentID);
+			currentID = current.ID; 
+
+			semiRelevant = false
+			relevant = false 
+ 
 			//id, isBarrier, barrierType, possibleActions, passability, x, y, children, parent
 			action = null
 			if(current.barrierType == 1){
@@ -715,42 +779,56 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			} else if (current.barrierType == 2){ 
 				action = dams
 				//alert("action = " + action)
+			} 
+ 
+ 			newNode = new Node(currentID, current.isBarrier, current.barrierType, action, current.passability, 0, 0, null, null);         
+			allNodes[currentID] = newNode
+
+			if (newNode == null){
+				alert("newly created node " + currentID + " is null!")
 			}
-			//} else {
-			//	//alert("creating node, with " + current.barrierType + " barrierType") 
-			//}
- 
-			allNodes[currentID] = new Node(currentID, current.isBarrier, current.barrierType, action, current.passability, 0, 0, null, null);     
-			//alert("creating node with " + allNodes[currentID].passability.toString() + " passability")
- 
-			//alert("creating node with " + current.passability + " passability\n" + allNodes[currentID].toString());
+			if (allNodes[currentID] == null){
+				alert("allNodes[currentID] for newly created node " + currentID + " is null!")
+			} 
+  
 			root = allNodes[currentID];
 			numberNodes++;
 		} 
-		alert("\nread in the nodes. (" + numberNodes.toString() + ")\n");
-		// tmp comment alert("\nread in the nodes.\n");
- 
-
+		alert("\nread in the nodes. (" + numberNodes.toString() + ")\n"); 
+  
 
  		problems = 0;
  		successes = 0;
- 		printIndicator = 0; 
+ 		printIndicator = 0;   
+
+ 		nodesMissingReport = ""
 
  		// read in all streams and use them to form connections between the nodes. 
-		for (index in streams){  
-			//alert("looping through streams.")
-			try { 
-				//alert("stream " + index);
-				current = streams[index];
-				//alert("current: " + current)
+		for (index in streams){   
+			try {  
+				current = streams[index]; 
 				upstreamID = current.upstreamNodeID.toString();
 				downstreamID = current.downstreamNodeID.toString();
 				upstream = allNodes[upstreamID]; 
 				downstream = allNodes[downstreamID];  
 
+				if (upstream == null){
+					upstream = new Node(upstreamID, false, -1, null, 1.0, 0, 0, null, null)
+					allNodes[upstreamID] = upstream
+					nodesMissingReport += upstreamID + "\n"
+				}
+				if (downstream == null){
+					downstream = new Node(downstreamID, false, -1, null, 1.0, 0, 0, null, null)
+					allNodes[downstreamID] = downstream
+					nodesMissingReport += upstreamID + "\n"
+				}
 
-				pathDirections = "M";
-				//alert("current.segments: " + current.segments)
+ 
+				/*if (downstream.hasChild(upstream)){
+					continue;
+				} */
+
+				pathDirections = "M"; 
 				for (j = 0; j + 1 < current.segments.length; j+=2){ 
 					if (pathDirections != "M"){
 						pathDirections += "L";
@@ -759,33 +837,47 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 					pathDirections += ",";
 					pathDirections += current.segments[j+1]; 
 				} 
-
-				//// tmp comment alert("adding path " + downstreamID + " -> " + upstreamID + " \n" + pathDirections)
+ 
 				path = paper.path(pathDirections);  
 				path.attr({"stroke-width":2});
 				path.attr({stroke:"#FF4D4D"}); 
 
+				if (relevant){
+					path.attr({stroke:"#CCFF66"}); 
+					if (ofNoteIsUpstream){
+						upstream.nodeDrawing.attr({fill: "#0099CC"/*"green"*/, stroke:"transparent","opacity":".90"}); 
+					} else {
+						downstream.nodeDrawing.attr({fill: "#0099CC"/*"green"*/, stroke:"transparent","opacity":".90"}); 
+					}
+				}
+				else if (semiRelevant){
+					path.attr({stroke:"#33ccff"});  
+					if (ofNoteIsUpstream){
+						upstream.nodeDrawing.attr({fill: "#009933"/*"green"*/, stroke:"transparent","opacity":".90"}); 
+					} else {
+						downstream.nodeDrawing.attr({fill: "#009933"/*"green"*/, stroke:"transparent","opacity":".90"}); 
+					}
+				}
 
-				//console.log(downstreamID + " -> " + upstreamID); 
- 	
-				//upstream.setXY(current.segments[0], current.segments[1]);       //testing
-				//downstream.setXY(current.segments[j-2], current.segments[j-1])  //testing  
+
+				////tmpconsole.log(downstreamID + " -> " + upstreamID);  
  	 		  
  	 		  	//alert("setting XY of \n" + downstream.toString() + "\n\n\n" + upstream.toString())
  	 			downstream.setXY(current.segments[0], current.segments[1]);  //normal
 				upstream.setXY(current.segments[j-2], current.segments[j-1]) //normal  
- 
-				 //try {
-				downstream.addChild(upstream, current.length, 0, path); 
+  
+				downstream.addChild(upstream, current.length, 0, path);  
 				successes++;
 			} catch (error) { 
-				//console.log(upstreamID + " -> " + downstreamID);
-				//console.log("upstream " + upstream);
-				//console.log("downstream " + downstream);
+				////tmpconsole.log(upstreamID + " -> " + downstreamID);
+				////tmpconsole.log("upstream " + upstream);
+				////tmpconsole.log("downstream " + downstream);
 				//break;
-				//console.log(current)
+				////tmpconsole.log(current)
 				problems++;
 			}
+
+			
 
 			printIndicator += 1;
 			if (printIndicator >= 20000){
@@ -793,17 +885,13 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				printIndicator = 0;
 			}
 		}
-
+		
+		console.log("missing: " + nodesMissingReport)
 		// tmp comment alert("read in the stream segments");
 		console.log("\nread in the stream segments.\n");
 		console.log(successes + " successful");
 		console.log("(encountered " + problems + " problems along the way)");
-
-		//var root = allNodes["0"];
-		//while(root.parent != null){
-		//	root = root.parent;
-		//}
-
+ 
 		// find all of the roots in the network(s)
 		for (key in allNodes){
 			if (allNodes[key].parent == null){
@@ -812,12 +900,17 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		}
 
 		alert("\nfound " + this.networkSource.length + " roots\n");
-		//console.log("root " + root); 
+		////tmpconsole.log("root " + root); 
  
 		// finish setting up each network
 		for (index in this.networkSource){ 
 			root = this.networkSource[index];
 			// tmp comment alert("setting up another branch! \n" + root);
+
+			if (index % 10 == 0){
+				alert("setting up another branch! (" + index + "th) \n" + root);
+			}
+
 			root.addDrawingNodes(0); 
 			//alert("node with " + root.passability.toString() + " passability\n" + root.toString()) 
 			root.calculateAccessibility(1.0);
@@ -830,22 +923,14 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		}
 
 		this.markAllSelected(this.selectedNode)
-		this.selectedNode.setColors();
-		//root.addDrawingNodes(0);
-		// tmp comment alert("added the drawings for the nodes!!!")
-		//this.addEvents(root);
-		//root.calculateAccessibility(1.0);
-
-		//root.nodeDrawing.attr({fill: "blue"/*, r:"15"*/}); 
-		//this.networkSource = root; 
-		this.allNodes = allNodes; 
-		//summary.innerHTML = reportString()
+		this.selectedNode.setColors(); 
+		this.allNodes = allNodes;  
 		summary.innerHTML = this.createSummary()  
 
 		this.checkOPT(); 
 
 		alert("setup complete!")
-		console.log("setup complete!")
+		//tmpconsole.log("setup complete!")
 	}  
 
 
@@ -936,7 +1021,11 @@ function zoom(factor){
 function refreshViewBox(){
 	svg = document.getElementsByTagName("svg")[0];
 	//svg.viewBox = viewBox[0].toString() + " " + viewBox[1].toString() + " " + viewBox[2].toString() + " " + viewBox[3].toString() + " ";   
-	svg.setAttribute("viewBox", viewBox[0].toString() + " " + viewBox[1].toString() + " " + viewBox[2].toString() + " " + viewBox[3].toString() + " ");   
+	
+	// view box: leftX, topY, rightX, bottomY
+	// Kim **********
+
+	//svg.setAttribute("viewBox", viewBox[0].toString() + " " + viewBox[1].toString() + " " + viewBox[2].toString() + " " + viewBox[3].toString() + " ");   
 	
 	w = viewBox[2] - viewBox[0];
 	h = viewBox[3] - viewBox[1];
@@ -1015,7 +1104,7 @@ function main(){
         // Action performed when mouse button if pressed down
         var mouseDownListener = function(event){
 
-        	console.log("mouse down");
+        	//tmpconsole.log("mouse down");
 
             mouseIsDown = true;
             mouseDownX = event.pageX;
@@ -1023,13 +1112,13 @@ function main(){
 
 
 
-            console.log("initial position :" + mouseDownX + " and " + mouseDownY);
+            //tmpconsole.log("initial position :" + mouseDownX + " and " + mouseDownY);
         };
 
         // Action performed when mouse button is released
         var mouseUpListener = function(event)
         {
-        	console.log("mouse up");
+        	//tmpconsole.log("mouse up");
         	
         	mouseIsDown = false;
         }
@@ -1040,7 +1129,7 @@ function main(){
         	// Do nothing unless dragging
         	if(mouseIsDown)
         	{
-        		console.log("dragging");  
+        		//tmpconsole.log("dragging");  
 
         		currentx = event.pageX ;
         	    currenty = event.pageY ;
@@ -1052,8 +1141,8 @@ function main(){
 
         	translate(xChange*xScale*0.5,yChange*yScale*0.5);
 
-            console.log("xChange:" + xChange + " and yChange   " + yChange);
-                        console.log("viewbox xrange   :" + xRange + " and yRange   " + yRange);
+            //tmpconsole.log("xChange:" + xChange + " and yChange   " + yChange);
+                        //tmpconsole.log("viewbox xrange   :" + xRange + " and yRange   " + yRange);
 
 
 
@@ -1078,15 +1167,15 @@ function main(){
 
         var mouseDragListener = function(event)
         {
-        	console.log("dragging");
+        	//tmpconsole.log("dragging");
         		var currentx = event.pageX;
         	    var currenty = event.pageY;
 
         	    var xChange = currentx - mouseDownX;
         	    var yChange = currenty - mouseDownY;
-        	    console.log("xChange  :" + xChange + " and \n yChange   :" + yChange);
-      		    console.log("current position :" + currentx + " and " + currenty);
-      		    console.log("xScale  :" + xScale + " and yScale : " + yScale);
+        	    //tmpconsole.log("xChange  :" + xChange + " and \n yChange   :" + yChange);
+      		    //tmpconsole.log("current position :" + currentx + " and " + currenty);
+      		    //tmpconsole.log("xScale  :" + xScale + " and yScale : " + yScale);
   
         	    translate(xChange-w,yChange-h);
 
@@ -1110,15 +1199,15 @@ function main(){
 
 	 
 	paper = new Raphael(document.getElementById('canvas'), width, height); 
-	/*paper.drag(function(dx, dy, x, y, dragMove){console.log("moving!: change x,y" + dx + "," + dy)},
-		function(x, y, dragStart){console.log("start of mouse drag!!!!!!!!!!!!!"); alert("start drag")},
-		function(dragEnd){console.log("finished mouse drag!!!!!!!!!!!!"); alert("stopped drag")});
+	/*paper.drag(function(dx, dy, x, y, dragMove){//tmpconsole.log("moving!: change x,y" + dx + "," + dy)},
+		function(x, y, dragStart){//tmpconsole.log("start of mouse drag!!!!!!!!!!!!!"); alert("start drag")},
+		function(dragEnd){//tmpconsole.log("finished mouse drag!!!!!!!!!!!!"); alert("stopped drag")});
 	*/
 
 	// paper.canvas.mousemove(function(e) {
 	//   var offset = $(this).offset(), offsetX = e.pageX - offset.left, offsetY = e.pageY - offset.top;
 	//   //do something with offsetX and offsetY
-	//   console.log("moving");
+	//   //tmpconsole.log("moving");
 
 	// });
 
@@ -1191,8 +1280,9 @@ function main(){
 	dataManager.budget = slider.value;
 
 	// change the source file for the data
-	//$.get("BarrierAndStreamInfoOpt.json", function(data){ 
-	$.get("BarrierAndStreamInfoOptNetworkReduced2.json", function(data){   
+	$.get("BarrierAndStreamInfoOpt.json", function(data){ 
+	//$.get("BarrierAndStreamInfoOptReduced.json", function(data){ 
+	//$.get("BarrierAndStreamInfoOptNetworkReduced2.json", function(data){   
 	//$.get("BarrierAndStreamInfo.json", function(data){
 	//$.get("BarrierAndStreamInfoSubNetwork.json", function(data){	
 		dataManager.init(data);

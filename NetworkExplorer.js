@@ -173,7 +173,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		return output;
 	},
 
-		/**
+	/** 
 	 * Return a string with the node id, the id of its children, and information
 	 * about passability, accessibility, and selection status.
 	 **/
@@ -193,8 +193,18 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		}
 		
 		if (this.children[2] != undefined && this.children[2][0] != undefined){
-			output += "\n\naccessibility going out: " + this.children[2][0].toFixed(3);
+			output += "\n\naccessibility going out: " + this.children[2][0].toFixed(3) + "<br>";
+
+			output += "children: "
+			for (index in this.children[0]){
+				output += this.children[0][index].id + ", "
+			}
+			output += "<br>"
 		}
+
+		output += "selected: " + this.selected + "<br>"
+		output += "partiallySelected: " + this.partiallySelected + "<br>"
+		output += "repaint? " + this.requireRepaint
 		return output;
 	},
 
@@ -202,6 +212,8 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		if (this.selected != selected){
 			this.requireRepaint = true
 			this.selected = selected
+			//this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".85"});
+
 		}
 	},
 
@@ -209,6 +221,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		if (this.partiallySelected != partiallySelected){
 			this.requireRepaint = true
 			this.partiallySelected = partiallySelected 
+			//this.nodeDrawing.attr({fill: "#66FF66", stroke:"transparent","opacity":".85"});
 		}
 	},
 
@@ -218,7 +231,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	 **/
 	Node.prototype.setColors = function (){ 
 		if (!this.selected && !this.partiallySelected && !this.requireRepaint){
-			return
+			//return
 		}
 
 		//66CCFF blue
@@ -404,20 +417,24 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	 **/ 
 	DataManager.prototype.updateSelected = function (calledFrom){ 
 		alert("in updateSelected. calledFrom \n" + calledFrom.toString());  
-		dataManager.markAllSelected(calledFrom); 
+		//dataManager.markAllSelected(calledFrom); 
 		// the root of the network containing calledFrom is returned 
 		activeRoot = dataManager.partiallyDeselect(calledFrom.parent, calledFrom); 
+		dataManager.markAllSelected(calledFrom); 
 
 		// deselect nodes that are parts of unconnected networks. 
+		alert("deselecting networks separate from the partially selected one.")
 		for (index in dataManager.networkSource){ 
 			root = dataManager.networkSource[index]
 			//alert("changing colors of other networks " + root)
 			if (root != activeRoot){
+				alert("current root: \n" + root.toString() + "\n\nactive root: \n" + activeRoot.toString())
 				dataManager.deselect(root);
 			}
 		}
 
 		dataManager.selectedNode = calledFrom;
+		alert("updated selection!") 
 		dataManager.updateSolution() 
 	},
 
@@ -432,6 +449,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
 		//current.selected = true     
 		current.setSelection(true)
+		current.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".85"});
 
 		if (current.children != null){
 			for (index in current.children[0]){
@@ -458,11 +476,16 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		//current.partiallySelected = true; 
 		current.setSelection(false)  
 		current.setPartialSelection(true)  
+		//current.nodeDrawing.attr({fill: "#66FF66", stroke:"transparent","opacity":".85"});
+		//current.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".70"});
 
 		 for (index in current.children[0]){  
 		 	nextNode = current.children[0][index];
 		 	if(nextNode != previous){
-		 		this.deselect(nextNode);
+		 		this.deselect(nextNode); 
+		 		nextNode.nodeDrawing.attr({fill: "#FF4D4D", stroke:"transparent","opacity":".70"});
+		 	} else {
+		 		nextNode.nodeDrawing.attr({fill: "#66FF66", stroke:"transparent","opacity":".85"});
 		 	}
 		 } 
 
@@ -484,6 +507,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		//current.partiallySelected = false; 
 		current.setSelection(false)  
 		current.setPartialSelection(false)  
+		current.nodeDrawing.attr({fill: "#9966FF", stroke:"transparent","opacity":".85"});
 		
 		if (current.children != null){ 
 			for (index in current.children[0]){
@@ -750,10 +774,28 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		crossings = info.actions.crossings
 		//alert("action options for: \ndams = " + dams + "\ncrossings = " + crossings)
  
-		viewBox[0] = 5;
-		viewBox[1] = 5;
-		viewBox[2] = 500;//200;//130;//800; //150;  
-		viewBox[3] = 500;//200;//130;//500; //150;   
+ 		displayInfo = info.displayInfo 
+ 		alert("maxX: " + displayInfo.maxX + "\nmaxY: " + displayInfo.maxY)
+ 		console.log("maxX: " + displayInfo.maxX + "\nmaxY: " + displayInfo.maxY) 
+		viewBox[2] = displayInfo.maxX + 10
+		viewBox[3] = displayInfo.maxY + 10
+
+		screenWidth = canvas.offsetWidth
+		screenHeight = canvas.offsetHeight 
+
+		displayWidth = viewBox[2] - viewBox[0]
+		displayHeight = viewBox[3] - viewBox[1]
+
+		originalXRatio = screenWidth/displayWidth
+		originalYRatio = screenHeight/displayHeight
+
+		//originalXRatio = originalXRatio/2.7 
+		//originalYRatio = originalYRatio/2.7  
+
+		//viewBox[0] = 5;
+		//viewBox[1] = 5;
+		//viewBox[2] = 500;//200;//130;//800; //150;  
+		//viewBox[3] = 500;//200;//130;//500; //150;   
 		refreshViewBox();   
  
 		/*//tmpconsole.log(nodes)
@@ -841,23 +883,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				path = paper.path(pathDirections);  
 				path.attr({"stroke-width":2});
 				path.attr({stroke:"#FF4D4D"}); 
-
-				if (relevant){
-					path.attr({stroke:"#CCFF66"}); 
-					if (ofNoteIsUpstream){
-						upstream.nodeDrawing.attr({fill: "#0099CC"/*"green"*/, stroke:"transparent","opacity":".90"}); 
-					} else {
-						downstream.nodeDrawing.attr({fill: "#0099CC"/*"green"*/, stroke:"transparent","opacity":".90"}); 
-					}
-				}
-				else if (semiRelevant){
-					path.attr({stroke:"#33ccff"});  
-					if (ofNoteIsUpstream){
-						upstream.nodeDrawing.attr({fill: "#009933"/*"green"*/, stroke:"transparent","opacity":".90"}); 
-					} else {
-						downstream.nodeDrawing.attr({fill: "#009933"/*"green"*/, stroke:"transparent","opacity":".90"}); 
-					}
-				}
+ 				
 
 
 				////tmpconsole.log(downstreamID + " -> " + upstreamID);  
@@ -929,6 +955,12 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
 		this.checkOPT(); 
 
+		viewBox[0] = -283.05631288504526
+		viewBox[1] = -172.02534530159937
+		viewBox[2] = -195.8833291059239
+		viewBox[3] = -87.29966458999581
+		refreshViewBox()
+
 		alert("setup complete!")
 		//tmpconsole.log("setup complete!")
 	}  
@@ -966,6 +998,8 @@ var height;
 var back;
 
 var viewBox;
+var originalXRatio; 
+var originalYRatio; 
 var viewRectangle;
 var colors;
 
@@ -983,6 +1017,36 @@ function translate(xChange, yChange){
 	// NaN does not equal itself, so isNaN is needed to make sure there are 
 	// 2 valid numbers. 
 	if (!isNaN(xChange) && !isNaN(yChange)) {  
+	    screenWidth = canvas.offsetWidth
+		screenHeight = canvas.offsetHeight
+
+		console.log("screenWidth: " + screenWidth + "\nscreenHeight: " + screenHeight)
+
+		displayWidth = viewBox[2] - viewBox[0]
+		displayHeight = viewBox[3] - viewBox[1]
+
+		console.log("displayWidth: " + displayWidth + "\ndisplayHeight: " + displayHeight)
+
+		widthDifference = screenWidth/displayWidth 
+		heightDifference = screenHeight/displayHeight 
+
+		console.log("widthDifference: " + widthDifference + "\nheightDifference: " + heightDifference)
+
+		xRatioChange = widthDifference/originalXRatio
+		yRatioChange = heightDifference/originalYRatio
+
+		//xRatioChange = xRatioChange/0.9
+		//yRatioChange = yRatioChange/0.9
+
+		console.log("originalXRatio: " + originalXRatio + "\noriginalYRatio: " + originalYRatio) 
+
+		console.log("xRatioChange: " + xRatioChange + "\nyRatioChange: " + yRatioChange) 
+ 		 
+		xChange = xChange/xRatioChange
+		yChange = yChange/yRatioChange
+
+		console.log("xChange: " + xChange + "\nyChange: " + yChange) 
+
 		viewBox[0] += xChange;
 		viewBox[1] += yChange;
 		viewBox[2] += xChange;
@@ -1003,14 +1067,91 @@ function zoomOut()
 	zoom(0.9);
 }
 function zoom(factor){
-	if(!isNaN(factor)){
-		xRange = viewBox[2] - viewBox[0];
-		yRange = viewBox[3] - viewBox[1];
+	/*if(!isNaN(factor)){
+		xRange = viewBox[2] - viewBox[0]  
+		yRange = viewBox[3] - viewBox[1]  
 
 		xRange = xRange / factor; 
-		viewBox[2] = viewBox[0] + xRange;
+		leftX = viewBox[0]
+		rightX = viewBox[2]
+		originalWidth = rightX - leftX
+		widthChange = xRange - originalWidth
+		leftX += widthChange/2.0
+		rightX = leftX + xRange 
+		
+		//viewBox[2] = viewBox[0] + xRange;
+		viewBox[0] = leftX
+		viewBox[2] = rightX
+
 		yRange = yRange / factor;
-		viewBox[3] = viewBox[1] + yRange;
+		topY = viewBox[1]
+		bottomY = viewBox[3]
+		originalWidth = bottomY - topY
+		heightChange = yRange - originalWidth
+		topY += heightChange/2.0
+		bottomY = topY + yRange 
+		//viewBox[3] = viewBox[1] + yRange;
+		viewBox[1] = topY
+		viewBox[3] = bottomY
+		refreshViewBox();
+	}
+
+	if(!isNaN(factor)){ 
+		width = viewBox[2] - viewBox[0]
+		height = viewBox[3] - viewBox[1]
+
+		xChange = width/2
+		yChange = height/2
+
+		viewBox[0] += xChange;
+		viewBox[1] += yChange;
+		viewBox[2] += xChange;
+		viewBox[3] += yChange;
+
+
+		width = width/factor
+		height = height/factor
+
+		viewBox[2] = viewBox[0] + width
+		viewBox[3] = viewBox[1] + height
+
+		viewBox[0] -= xChange;
+		viewBox[1] -= yChange;
+		viewBox[2] -= xChange;
+		viewBox[3] -= yChange;
+
+		refreshViewBox();
+	}*/
+
+	if(!isNaN(factor)){ 
+		leftX = viewBox[0]
+		rightX = viewBox[2]
+		topY = viewBox[1]
+		bottomY = viewBox[3]
+
+		width = rightX - leftX
+		height = bottomY - topY 
+
+		newWidth = width / factor
+		newHeight = height / factor
+
+		widthChange = newWidth - width
+		heightChange = newHeight - height
+
+		xChange = widthChange/2 
+		yChange = heightChange/2
+
+		leftX += xChange
+		topY += yChange
+
+		rightX = leftX + newWidth
+		bottomY = topY + newHeight
+
+		viewBox[0] = leftX
+		viewBox[1] = topY
+		viewBox[2] = rightX
+		viewBox[3] = bottomY
+
 		refreshViewBox();
 	}
 }
@@ -1022,14 +1163,10 @@ function refreshViewBox(){
 	svg = document.getElementsByTagName("svg")[0];
 	//svg.viewBox = viewBox[0].toString() + " " + viewBox[1].toString() + " " + viewBox[2].toString() + " " + viewBox[3].toString() + " ";   
 	
-	// view box: leftX, topY, rightX, bottomY
-	// Kim **********
-
-	//svg.setAttribute("viewBox", viewBox[0].toString() + " " + viewBox[1].toString() + " " + viewBox[2].toString() + " " + viewBox[3].toString() + " ");   
-	
-	w = viewBox[2] - viewBox[0];
-	h = viewBox[3] - viewBox[1];
-	paper.setViewBox(0 - viewBox[0], 0 - viewBox[1], w, h); 
+	// view box: leftX, topY, rightX, bottomY   
+	w = viewBox[2] - viewBox[0]; 
+	h = viewBox[3] - viewBox[1];  
+	paper.setViewBox(0 - viewBox[0], 0 - viewBox[1], w, h);    
  
 	//viewRectangle.attr({x:viewBox[0], y:viewBox[1], w:(viewBox[2]-viewBox[0]), h:(viewBox[3]-viewBox[1])})
 }
@@ -1077,7 +1214,7 @@ function main(){
 	width = 752;//470;
 	height = 470; 
 
-	viewBox = [0, 0, 3000, 3000];
+	viewBox = [5, 5, 3000, 3000];
 	//viewBox = [0, 0, 80, 80];
 
 
@@ -1139,7 +1276,8 @@ function main(){
         	    mouseDownX = currentx;
         	    mouseDownY = currenty;
 
-        	translate(xChange*xScale*0.5,yChange*yScale*0.5);
+        		//translate(xChange*xScale*0.5,yChange*yScale*0.5);
+        		translate(xChange,yChange);
 
             //tmpconsole.log("xChange:" + xChange + " and yChange   " + yChange);
                         //tmpconsole.log("viewbox xrange   :" + xRange + " and yRange   " + yRange);
@@ -1177,7 +1315,8 @@ function main(){
       		    //tmpconsole.log("current position :" + currentx + " and " + currenty);
       		    //tmpconsole.log("xScale  :" + xScale + " and yScale : " + yScale);
   
-        	    translate(xChange-w,yChange-h);
+        	    //translate(xChange-w,yChange-h);
+        	    translate(xChange,yChange);
 
         	    mouseDownX = currentx;
         	    mouseDownY = currenty;
@@ -1197,8 +1336,9 @@ function main(){
 	//=========================End of Mouse Events ==========================================
 	//=======================================================================================	
 
-	 
+	canvas = document.getElementById('canvas') 
 	paper = new Raphael(document.getElementById('canvas'), width, height); 
+	//paper = new Raphael(canvas, width, height); 
 	/*paper.drag(function(dx, dy, x, y, dragMove){//tmpconsole.log("moving!: change x,y" + dx + "," + dy)},
 		function(x, y, dragStart){//tmpconsole.log("start of mouse drag!!!!!!!!!!!!!"); alert("start drag")},
 		function(dragEnd){//tmpconsole.log("finished mouse drag!!!!!!!!!!!!"); alert("stopped drag")});
@@ -1213,6 +1353,7 @@ function main(){
 
     // Setting preserveAspectRatio to 'none' lets you stretch the SVG
 	paper.canvas.setAttribute('preserveAspectRatio', 'none');
+
 
 	$(document).keydown(function(event) {
 	
@@ -1282,7 +1423,7 @@ function main(){
 	// change the source file for the data
 	$.get("BarrierAndStreamInfoOpt.json", function(data){ 
 	//$.get("BarrierAndStreamInfoOptReduced.json", function(data){ 
-	//$.get("BarrierAndStreamInfoOptNetworkReduced2.json", function(data){   
+	//$.get("BarrierAndStreamInfoOptNetworkReduced2.json", function(data){  
 	//$.get("BarrierAndStreamInfo.json", function(data){
 	//$.get("BarrierAndStreamInfoSubNetwork.json", function(data){	
 		dataManager.init(data);

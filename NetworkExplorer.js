@@ -419,19 +419,29 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		alert("in updateSelected. calledFrom \n" + calledFrom.toString());  
 		//dataManager.markAllSelected(calledFrom); 
 		// the root of the network containing calledFrom is returned 
+		
+		// TMP added due to the multiple paths to node problem
+		// with selection and deselection. ***************************
+		for (index in dataManager.networkSource){
+			root = dataManager.networkSource[index]
+			dataManager.deselect(root)
+		}
+
 		activeRoot = dataManager.partiallyDeselect(calledFrom.parent, calledFrom); 
 		dataManager.markAllSelected(calledFrom); 
 
+		// TMP commented out due to the multiple paths to node problem
+		// with selection and deselection. ***************************
 		// deselect nodes that are parts of unconnected networks. 
-		alert("deselecting networks separate from the partially selected one.")
-		for (index in dataManager.networkSource){ 
-			root = dataManager.networkSource[index]
-			//alert("changing colors of other networks " + root)
-			if (root != activeRoot){
-				alert("current root: \n" + root.toString() + "\n\nactive root: \n" + activeRoot.toString())
-				dataManager.deselect(root);
-			}
-		}
+		//alert("deselecting networks separate from the partially selected one.")
+		//for (index in dataManager.networkSource){ 
+		//	root = dataManager.networkSource[index]
+		//	//alert("changing colors of other networks " + root)
+		//	if (root != activeRoot){
+		//		alert("current root: \n" + root.toString() + "\n\nactive root: \n" + activeRoot.toString())
+		//		dataManager.deselect(root);
+		//	}
+		//}
 
 		dataManager.selectedNode = calledFrom;
 		alert("updated selection!") 
@@ -449,7 +459,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
 		//current.selected = true     
 		current.setSelection(true)
-		current.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".85"});
+		//*tmpDebugSelectioncurrent.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".85"});
 
 		if (current.children != null){
 			for (index in current.children[0]){
@@ -476,18 +486,20 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		//current.partiallySelected = true; 
 		current.setSelection(false)  
 		current.setPartialSelection(true)  
-		//current.nodeDrawing.attr({fill: "#66FF66", stroke:"transparent","opacity":".85"});
+		//*tmpDebugSelectioncurrent.nodeDrawing.attr({fill: "#66FF66", stroke:"transparent","opacity":".85"});
 		//current.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".70"});
 
-		 for (index in current.children[0]){  
-		 	nextNode = current.children[0][index];
-		 	if(nextNode != previous){
-		 		this.deselect(nextNode); 
-		 		nextNode.nodeDrawing.attr({fill: "#FF4D4D", stroke:"transparent","opacity":".70"});
-		 	} else {
-		 		nextNode.nodeDrawing.attr({fill: "#66FF66", stroke:"transparent","opacity":".85"});
-		 	}
-		 } 
+		// TMP commented out due to the multiple paths to node problem
+		// with selection and deselection. ***************************
+		//for (index in current.children[0]){  
+		// 	nextNode = current.children[0][index];
+		// 	if(nextNode != previous){
+		// 		this.deselect(nextNode); 
+		// 		nextNode.nodeDrawing.attr({fill: "#FF4D4D", stroke:"transparent","opacity":".70"});
+		// 	} else {
+		// 		nextNode.nodeDrawing.attr({fill: "#66FF66", stroke:"transparent","opacity":".85"});
+		// 	}
+		//} 
 
 		if (current.parent != null){ 
 			return this.partiallyDeselect(current.parent, current);  
@@ -507,7 +519,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		//current.partiallySelected = false; 
 		current.setSelection(false)  
 		current.setPartialSelection(false)  
-		current.nodeDrawing.attr({fill: "#9966FF", stroke:"transparent","opacity":".85"});
+		//*tmpDebugSelectioncurrent.nodeDrawing.attr({fill: "#9966FF", stroke:"transparent","opacity":".85"});
 		
 		if (current.children != null){ 
 			for (index in current.children[0]){

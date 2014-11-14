@@ -967,11 +967,11 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
 		this.checkOPT(); 
 
-		viewBox[0] = -283.05631288504526
+		/*viewBox[0] = -283.05631288504526
 		viewBox[1] = -172.02534530159937
 		viewBox[2] = -195.8833291059239
 		viewBox[3] = -87.29966458999581
-		refreshViewBox()
+		refreshViewBox()*/
 
 		alert("setup complete!")
 		//tmpconsole.log("setup complete!")

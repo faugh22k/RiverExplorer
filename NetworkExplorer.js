@@ -591,7 +591,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
 		// calculate accessible habitat
 		dataManager.selectedNode.calculateHabitat(false)
-		alert("current habitat:  " + dataManager.selectedNode.currentHabitat.toString() + "\nprevious habitat: " + dataManager.selectedNode.previousHabitat.toString()) 
+		//alert("current habitat:  " + dataManager.selectedNode.currentHabitat.toString() + "\nprevious habitat: " + dataManager.selectedNode.previousHabitat.toString()) 
 
 		summary.innerHTML = dataManager.createSummary() 
 	}, 
@@ -742,7 +742,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
 		if (node.needsClickListener){
 			node.nodeDrawing.click(function(){
-				alert(node.toString());
+				//alert//(node.toString());
 				//this.updateSelected();
 				//method(node);
 				dataManager.updateSelected(node);
@@ -769,6 +769,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	 * Constructs the river network from json data 
 	 **/ 
 	DataManager.prototype.init = function  (data){
+		alert("is current version!")
 
 		// construct network from json
 
@@ -787,7 +788,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		//alert("action options for: \ndams = " + dams + "\ncrossings = " + crossings)
  
  		displayInfo = info.displayInfo 
- 		alert("maxX: " + displayInfo.maxX + "\nmaxY: " + displayInfo.maxY)
+ 		//alert("maxX: " + displayInfo.maxX + "\nmaxY: " + displayInfo.maxY)
  		console.log("maxX: " + displayInfo.maxX + "\nmaxY: " + displayInfo.maxY) 
 		viewBox[2] = displayInfo.maxX + 10
 		viewBox[3] = displayInfo.maxY + 10
@@ -836,14 +837,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			} 
  
  			newNode = new Node(currentID, current.isBarrier, current.barrierType, action, current.passability, 0, 0, null, null);         
-			allNodes[currentID] = newNode
-
-			if (newNode == null){
-				alert("newly created node " + currentID + " is null!")
-			}
-			if (allNodes[currentID] == null){
-				alert("allNodes[currentID] for newly created node " + currentID + " is null!")
-			} 
+			allNodes[currentID] = newNode 
   
 			root = allNodes[currentID];
 			numberNodes++;
@@ -994,7 +988,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
  *      Paints the River Network and the solution. 
  *    
  **********************************************************************************************/
-
+ 
 var dataManager;
 var canvas;
 var context; 

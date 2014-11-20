@@ -22,6 +22,8 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	this.children[1] = new Array(); // the length of the stream segment to child
 	this.children[2] = new Array(); // the accessibility of the stream segment to the child
 	this.children[3] = new Array(); // the streamSegments path object for drawing
+	this.children[4] = new Array(); // the stream id
+	this.outGoingAccessibility = 0.0;
 	this.parent = parent;
 	this.selected = true;
 	this.partiallySelected = false;
@@ -39,11 +41,11 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	/**
 	 * Adds a child connection to the node. 
 	 **/
-	Node.prototype.addChild = function (node, length, accessibility, streamSegments){
+	Node.prototype.addChild = function (node, length, accessibility, streamSegments, streamID){
 		//temporary
 		/*for (index in this.children){
 			if (this.children[0][index] === node){
-				// tmp error alert alert("tried to add a child twice!")
+				// tmp error alert ourAlert("tried to add a child twice!")
 				return;
 			}
 		}*/
@@ -52,6 +54,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		this.children[1].push(length);
 		this.children[2].push(accessibility); 
 		this.children[3].push(streamSegments);
+		this.children[4].push(streamID);
 		node.parent = this;
 	}, 
 
@@ -68,12 +71,12 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	 * Set the raphael node drawing object. 
 	 **/
 	Node.prototype.setDrawingNode = function (drawing){
-		// tmp comment alert("In set drawing node!")
+		// tmp comment ourAlert("In set drawing node!")
 		this.nodeDrawing = drawing;
 		pairedNode = this;
 		this.needsNodeDrawing = false
 		this.nodeDrawing.click(function(){
- 			// tmp comment alert("circle clicked!\n" + pairedNode.toString());
+ 			// tmp comment ourAlert("circle clicked!\n" + pairedNode.toString());
  			dataManager.updateSelected(pairedNode);
  		}); 
 	},
@@ -81,8 +84,8 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	/**
 	 * Add the node drawing for the node and its descendants. 
 	 **/
-	Node.prototype.addDrawingNodes = function(count){ 
-		if (this.needsNodeDrawing){
+	Node.prototype.addDrawingNodes = function(count, override){ 
+		if (this.needsNodeDrawing && (this.isBarrier || override)){
 			this.needsNodeDrawing = false;
 			this.nodeDrawing = paper.circle(this.x,this.y,1);
 			this.nodeDrawing.attr({fill: "green"});
@@ -90,12 +93,12 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		} 
 		
 		if (count >= 2000){
-			// tmp comment alert("still drawing nodes!");
+			// tmp comment ourAlert("still drawing nodes!");
 			count = 0;
 		}
 		
 		for(index in this.children[0]){
-			this.children[0][index].addDrawingNodes(++count);
+			this.children[0][index].addDrawingNodes(++count, false);
 		}
 	},
 
@@ -195,16 +198,54 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		if (this.children[2] != undefined && this.children[2][0] != undefined){
 			output += "\n\naccessibility going out: " + this.children[2][0].toFixed(3) + "<br>";
 
-			output += "children: "
-			for (index in this.children[0]){
-				output += this.children[0][index].id + ", "
-			}
-			output += "<br>"
+			//output += "children: "
+			//for (index in this.children[0]){
+			//	output += this.children[0][index].id + ", "
+			//}
+			//output += "<br>"
 		}
 
-		output += "selected: " + this.selected + "<br>"
-		output += "partiallySelected: " + this.partiallySelected + "<br>"
-		output += "repaint? " + this.requireRepaint
+		//output += "selected: " + this.selected + "<br>"
+		//output += "partiallySelected: " + this.partiallySelected + "<br>"
+		//output += "repaint? " + this.requireRepaint
+		return output;
+	},
+
+		/** 
+	 * Return a string with the node id, the id of its children, and information
+	 * about passability, accessibility, and selection status.
+	 **/
+	Node.prototype.reportStringForStream = function (index){ 
+		output = "Stream " + this.children[4][index] + "<br>";    
+		output += "accessibility: " + this.children[2][index].toFixed(3) + "<br>";
+
+
+		/*if (this.isBarrier){ 
+			if (this.barrierType == 1){
+				output += "Crossing <br>";
+			} else if (this.barrierType == 2){
+				output += "Dam <br>";
+			}
+			output += "passability: " + this.passability.toFixed(3) + "<br>";  
+			if(this.currentAction != -1){
+				output += "\naction taken: " + this.currentAction + "<br>"; 
+				output += "improved passability: " + this.improvedPassability.toFixed(3) + "<br>";   
+			}
+		}*/
+		
+		/*if (this.children[2] != undefined && this.children[2][0] != undefined){
+			output += "\n\naccessibility going out: " + this.children[2][0].toFixed(3) + "<br>";
+
+			//output += "children: "
+			//for (index in this.children[0]){
+			//	output += this.children[0][index].id + ", "
+			//}
+			//output += "<br>"
+		}*/
+
+		//output += "selected: " + this.selected + "<br>"
+		//output += "partiallySelected: " + this.partiallySelected + "<br>"
+		//output += "repaint? " + this.requireRepaint
 		return output;
 	},
 
@@ -254,13 +295,15 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 
 		// selected
 		// color the node  
-		if (!this.isBarrier){
-			this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".70"});
-		} else {
-			if (this.currentAction == -1){
-				this.nodeDrawing.attr({fill: "#78c44c" /*"#6bba4e"/*"#84cd4a"/*"#60b150"/*"#40AE26"/*"#669900"/*"#33B533"*/, stroke:"transparent","opacity":"0.85"/*"1.0"*/});
+		if (!this.needsNodeDrawing){
+			if (!this.isBarrier){
+				this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".70"});
 			} else {
-				this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".85"});
+				if (this.currentAction == -1){
+					this.nodeDrawing.attr({fill: "#78c44c" /*"#6bba4e"/*"#84cd4a"/*"#60b150"/*"#40AE26"/*"#669900"/*"#33B533"*/, stroke:"transparent","opacity":"0.85"/*"1.0"*/});
+				} else {
+					this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".85"});
+				}
 			}
 		}
 		// color the paths to the children (river segments)
@@ -275,18 +318,20 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			return    
 		} 
 
-		if(this.partiallySelected){
-			// on the path to the root
-			// color the node
-			if(!this.isBarrier){
-				this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".55"}); 
+		if (!this.needsNodeDrawing){
+			if(this.partiallySelected){
+				// on the path to the root
+				// color the node
+				if(!this.isBarrier){
+					this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".55"}); 
+				} else {
+					this.nodeDrawing.attr({fill: "#669900", stroke:"transparent","opacity":".50"}); 
+				}
 			} else {
-				this.nodeDrawing.attr({fill: "#669900", stroke:"transparent","opacity":".50"}); 
-			}
-		} else {
-			// unselected
-			this.nodeDrawing.attr({fill: "#D4D4D4", stroke:"transparent","opacity":".30"});  
-		} 
+				// unselected
+				this.nodeDrawing.attr({fill: "#D4D4D4", stroke:"transparent","opacity":".30"});  
+			} 
+		}
  
 		for (index in this.children[0]){  
 			// if this and the child are partiallySelected, color the stream black (path to root)
@@ -323,14 +368,14 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 
 		for (index in this.children[0]){
 			if (this.children[0][index] != null){ 
-				//alert("calculating habitat for children!\n***********************\n\n" + this.toString() + "\n\n***********************\nchildren[0] = " + this.children[0][index]) 
+				//ourAlert("calculating habitat for children!\n***********************\n\n" + this.toString() + "\n\n***********************\nchildren[0] = " + this.children[0][index]) 
 				// accessibility of stream segment * length
 				habitat += this.children[2][index] * this.children[1][index];
 
 				// add the habitat of the child
 				habitat += this.children[0][index].calculateHabitat(isOriginal);
 			} else {
-				alert("for some reason, an entry in children[0]" + index.toString() + " is null in calculateHabitat. \n\n" + this.toString())
+				ourAlert("for some reason, an entry in children[0]" + index.toString() + " is null in calculateHabitat. \n\n" + this.toString())
 			}
 		}
 
@@ -353,20 +398,20 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			compare = true
 		}
 
-		//alert("calculating accessibility. \ncomingIn = " + comingIn + "\npassability = " + this.passability + "\nimprovedPassability = " + this.improvedPassability + "\n\ngoing out should be: " + (comingIn*this.improvedPassability));
+		//ourAlert("calculating accessibility. \ncomingIn = " + comingIn + "\npassability = " + this.passability + "\nimprovedPassability = " + this.improvedPassability + "\n\ngoing out should be: " + (comingIn*this.improvedPassability));
 		if(this.isBarrier){
 
 			//accessibility = comingIn * (this.passability + this.passabilityImprovement);
 			accessibility = comingIn * this.improvedPassability; 
 			colorString = this.getColor(accessibility)
 			this.nodeDrawing.attr({fill: "#FF4500"/*"#33B533"*/, stroke:"transparent","opacity":".55"});
-			//alert("passability: " + this.improvedPassability + "\ncoming in: " + comingIn +  	"\nheading out:" + accessibility + "\n\n" + this.toString());  
+			//ourAlert("passability: " + this.improvedPassability + "\ncoming in: " + comingIn +  	"\nheading out:" + accessibility + "\n\n" + this.toString());  
 			this.nodeDrawing.attr({fill: "#1e90ff"/*"#33B533"*/, stroke:"transparent","opacity":".55"});
 			//for (index in this.children[0]){ 
 			//	this.children[3][index].attr({stroke:colorString});  
 			//} 
 		} else {
-			//alert("(not a barrier)\npassability: " + this.improvedPassability + "\ncoming in: " + comingIn +  	"\nheading out:" + accessibility); 
+			//ourAlert("(not a barrier)\npassability: " + this.improvedPassability + "\ncoming in: " + comingIn +  	"\nheading out:" + accessibility); 
 			accessibility = comingIn;
 		}
 
@@ -416,7 +461,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	 *  so only the first unselected node needs to be changed)
 	 **/ 
 	DataManager.prototype.updateSelected = function (calledFrom){ 
-		alert("in updateSelected. calledFrom \n" + calledFrom.toString());  
+		ourAlert("in updateSelected. calledFrom \n" + calledFrom.toString());  
 		//dataManager.markAllSelected(calledFrom); 
 		// the root of the network containing calledFrom is returned 
 		
@@ -433,18 +478,18 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		// TMP commented out due to the multiple paths to node problem
 		// with selection and deselection. ***************************
 		// deselect nodes that are parts of unconnected networks. 
-		//alert("deselecting networks separate from the partially selected one.")
+		//ourAlert("deselecting networks separate from the partially selected one.")
 		//for (index in dataManager.networkSource){ 
 		//	root = dataManager.networkSource[index]
-		//	//alert("changing colors of other networks " + root)
+		//	//ourAlert("changing colors of other networks " + root)
 		//	if (root != activeRoot){
-		//		alert("current root: \n" + root.toString() + "\n\nactive root: \n" + activeRoot.toString())
+		//		ourAlert("current root: \n" + root.toString() + "\n\nactive root: \n" + activeRoot.toString())
 		//		dataManager.deselect(root);
 		//	}
 		//}
 
 		dataManager.selectedNode = calledFrom;
-		alert("updated selection!") 
+		ourAlert("updated selection!") 
 		dataManager.updateSolution() 
 	},
 
@@ -466,11 +511,9 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				dataManager.markAllSelected(current.children[0][index])   
 			}
 		} else {
-			// alert("children is undefined for \n" + currentID.toString())
+			// ourAlert("children is undefined for \n" + currentID.toString())
 		}
-
-		 
-		
+ 		 
 	}, 
 
 	/**
@@ -527,7 +570,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			}
 		}
 		else {
-			// alert("(deselect) children is undefined for \n" + currentID.toString())
+			// ourAlert("(deselect) children is undefined for \n" + currentID.toString())
 		}
 	},
 
@@ -576,22 +619,22 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		
 		// go through the solution if one is found.  
 		if (start != null) {
-			alert("beginning to follow the solution!")
+			ourAlert("beginning to follow the solution!")
 			dataManager.followSolution(start, false)
 		} else {
-			alert("no solution entry point found!")
+			ourAlert("no solution entry point found!")
 		}
 
 		// recalculate accessibility
 		dataManager.selectedNode.calculateAccessibility(1.0)
-		alert("recalculated accessibility")
+		ourAlert("recalculated accessibility")
 		// reset colors
 		dataManager.updateAllColors(); 
-		alert("colors updated")
+		ourAlert("colors updated")
 
 		// calculate accessible habitat
 		dataManager.selectedNode.calculateHabitat(false)
-		//alert("current habitat:  " + dataManager.selectedNode.currentHabitat.toString() + "\nprevious habitat: " + dataManager.selectedNode.previousHabitat.toString()) 
+		//ourAlert("current habitat:  " + dataManager.selectedNode.currentHabitat.toString() + "\nprevious habitat: " + dataManager.selectedNode.previousHabitat.toString()) 
 
 		summary.innerHTML = dataManager.createSummary() 
 	}, 
@@ -604,36 +647,36 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		closestCost = null
 		desiredID = dataManager.selectedNode.id
 		entriesForNode = dataManager.OPT[desiredID]
-		alert("starting node: " +  dataManager.selectedNode.toString() + "\n\nentries for node: \n" + entriesForNode)
+		ourAlert("starting node: " +  dataManager.selectedNode.toString() + "\n\nentries for node: \n" + entriesForNode)
 
 		if (desiredID.toString() in dataManager.OPT) {
-			alert("should have an entry! " + desiredID + " is in OPT!")
+			ourAlert("should have an entry! " + desiredID + " is in OPT!")
 		} else {
-			alert(desiredID + " doesn't seem to be in OPT.")
+			ourAlert(desiredID + " doesn't seem to be in OPT.")
 		}
 
-		alert("our budget is " + dataManager.budget + " and we're starting from node " + desiredID)
+		ourAlert("our budget is " + dataManager.budget + " and we're starting from node " + desiredID)
 		foundAnEntry = false
 		for (key in entriesForNode) {
 			entry = entriesForNode[key]
 			cost = Number(entry["cost"]) 
-			//alert("cost = \'" + cost + "\'\nentry['cost'] = \'" + entry["cost"] + "\'")
+			//ourAlert("cost = \'" + cost + "\'\nentry['cost'] = \'" + entry["cost"] + "\'")
 			//if (!isNaN(cost) && (closestCost == null || ((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
 			if (!isNaN(cost) && ((closestCost == null && cost <= dataManager.budget) || ((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
 				closestEntry = entry
 				closestCost = cost
-				//alert(closestCost + " cost is closer to our budget")
+				//ourAlert(closestCost + " cost is closer to our budget")
 				foundAnEntry = true
 			}
 		}
 		if (!foundAnEntry){
 			return null;
 		} else if (closestCost == 0){
-			alert("Our only found entry is for cost 0! The solution will not improve passability!!!")
+			ourAlert("Our only found entry is for cost 0! The solution will not improve passability!!!")
 			return null;
 		}
 
-		alert("returning closest entry: " + closestEntry + ", cost of " + closestCost) 
+		ourAlert("returning closest entry: " + closestEntry + ", cost of " + closestCost) 
 		return closestEntry
 	}, 
 
@@ -648,32 +691,32 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	DataManager.prototype.followSolution = function(start, includeSibling){
 		// *important  dataManager.allNodes[start.nodeID].passabilityImprovement = _____
 		if (start == undefined || dataManager.allNodes[start.nodeID] == undefined || Number(start["value"]) <= 0){
-			alert("in followSolution(). returning because solution start or node is undefined")
+			ourAlert("in followSolution(). returning because solution start or node is undefined")
 			return
 		}
 
 		// get the node from the dictionary of all nodes   
 		currentNode = dataManager.allNodes[start.nodeID];
 		action = start.actionID;
-		//solution ** alert("action: " + action + "    current node: \n" + currentNode.toString())
+		//solution ** ourAlert("action: " + action + "    current node: \n" + currentNode.toString())
 		currentNode.setAction(action)   
 
-		//alert("taking action " + action + " at \n" + currentNode.toString() + "\nopt entry: \n" + start)
+		//ourAlert("taking action " + action + " at \n" + currentNode.toString() + "\nopt entry: \n" + start)
 
-		//solution ** alert("start: " + start + "\n\ncurrentNode: " + currentNode);
+		//solution ** ourAlert("start: " + start + "\n\ncurrentNode: " + currentNode);
 
-		//alert("the id of the child is: " +  start["firstChildID"] + "\nthe value of the child is: " +  start["valueChild"])
+		//ourAlert("the id of the child is: " +  start["firstChildID"] + "\nthe value of the child is: " +  start["valueChild"])
 		if (start["firstChildID"] != "-1" && Number(start["valueChild"]) > 0){ 
-			// solution ** alert("following solution to actions spreading out from child!")
+			// solution ** ourAlert("following solution to actions spreading out from child!")
 			child = dataManager.OPT[start["firstChildID"]][start["valueChild"]]
 			dataManager.followSolution(child, true)
 		} 
 
 		/*if(includeSibling){
-			alert("the id of the sibling is: " +  start["siblingID"] + "\nthe value of the sibling is: " +  start["siblingChild"])
+			ourAlert("the id of the sibling is: " +  start["siblingID"] + "\nthe value of the sibling is: " +  start["siblingChild"])
 		}*/
 		if(includeSibling && [start["siblingID"]] != "-1" && Number(start["valueSibling"]) > 0){ 
-			//solution ** alert("following solution to actions spreading out from sibling!")
+			//solution ** ourAlert("following solution to actions spreading out from sibling!")
 			sibling = dataManager.OPT[start["siblingID"]][start["valueSibling"]]
 			dataManager.followSolution(sibling, true)
 		}
@@ -690,7 +733,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		for (item in this.OPT) {
 			includedNodes += item + ", "
 		}
-		alert(includedNodes); */
+		ourAlert(includedNodes); */
 
 		includedNodes = ""
 		excludedNodes = ""
@@ -704,10 +747,10 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			}
 		}
 
-		alert("includedNodes: \n\n" + includedNodes)
-		alert("excludedNodes: \n\n" + excludedNodes)  
+		ourAlert("includedNodes: \n\n" + includedNodes)
+		ourAlert("excludedNodes: \n\n" + excludedNodes)  
  		if (someExcluded){
- 			//alert("some nodes have been excluded from opt!\n\n" + excludedNodes)
+ 			//ourAlert("some nodes have been excluded from opt!\n\n" + excludedNodes)
  		}
 	} 
 
@@ -725,7 +768,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	 **/
 	DataManager.prototype.addEventsToAllBranches = function(branches, method){
 		for (index in branches){
-			// tmp comment alert("adding events to the next branch!")
+			// tmp comment ourAlert("adding events to the next branch!")
 			this.addEvents(branches[index], method, 0);
 		}
 	},
@@ -736,26 +779,44 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	DataManager.prototype.addEvents = function(node, method, count){
 		
 		if(count >= 5){
-			// tmp comment alert("adding events\n" + node.toString() + "\n" + node.nodeDrawing); 
+			// tmp comment ourAlert("adding events\n" + node.toString() + "\n" + node.nodeDrawing); 
 			count = -1;
 		}
 
 		if (node.needsClickListener){
-			node.nodeDrawing.click(function(){
-				//alert//(node.toString());
-				//this.updateSelected();
-				//method(node);
-				dataManager.updateSelected(node);
-			});
+			if (node.nodeDrawing != null){
+				node.nodeDrawing.click(function(){
+					//alert//(node.toString());
+					//this.updateSelected();
+					//method(node);
+					dataManager.updateSelected(node);
+				});
 
-			// adds hover functions: the first called during hover; the second,
-			// when hover stops.   
-			node.nodeDrawing.hover(function(){
-				information.innerHTML = node.reportString()   
-				//information.text = "testing"
-			}, function(){
-				information.innerHTML = "\n\n" 
-			});
+				// adds hover functions: the first called during hover; the second,
+				// when hover stops.   
+				node.nodeDrawing.hover(function(){
+					information.innerHTML = node.reportString()   
+					//information.text = "testing"
+				}, function(){
+					information.innerHTML = "\n\n" 
+				});
+			}
+
+			for (index in node.children[3]){
+					node.children[3][index].click(function(){
+					//alert//(node.toString());
+					//this.updateSelected();
+					//method(node);
+					dataManager.updateSelected(node);
+				});
+
+				node.children[3][index].hover(function(){ 
+					information.innerHTML = node.reportStringForStream(index)   
+					//information.text = "testing"
+				}, function(){
+					information.innerHTML = "\n\n" 
+				});
+			}
 
 			node.needsClickListener = false;
  	
@@ -769,7 +830,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	 * Constructs the river network from json data 
 	 **/ 
 	DataManager.prototype.init = function  (data){
-		alert("is current version!")
+		ourAlert("is current version!")
 
 		// construct network from json
 
@@ -785,10 +846,15 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		this.OPT = info.optInfo;  
 		dams = info.actions.dams
 		crossings = info.actions.crossings
-		//alert("action options for: \ndams = " + dams + "\ncrossings = " + crossings)
+		//ourAlert("action options for: \ndams = " + dams + "\ncrossings = " + crossings)
  
  		displayInfo = info.displayInfo 
- 		//alert("maxX: " + displayInfo.maxX + "\nmaxY: " + displayInfo.maxY)
+ 		//ourAlert("maxX: " + displayInfo.maxX + "\nmaxY: " + displayInfo.maxY)
+ 		
+ 		if (displayInfo == null){
+ 			displayInfo = {maxX: 100, maxY: 100};
+ 		}
+
  		console.log("maxX: " + displayInfo.maxX + "\nmaxY: " + displayInfo.maxY) 
 		viewBox[2] = displayInfo.maxX + 10
 		viewBox[3] = displayInfo.maxY + 10
@@ -830,10 +896,10 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			action = null
 			if(current.barrierType == 1){
 				action = crossings
-				//alert("action = " + action)
+				//ourAlert("action = " + action)
 			} else if (current.barrierType == 2){ 
 				action = dams
-				//alert("action = " + action)
+				//ourAlert("action = " + action)
 			} 
  
  			newNode = new Node(currentID, current.isBarrier, current.barrierType, action, current.passability, 0, 0, null, null);         
@@ -842,7 +908,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			root = allNodes[currentID];
 			numberNodes++;
 		} 
-		alert("\nread in the nodes. (" + numberNodes.toString() + ")\n"); 
+		ourAlert("\nread in the nodes. (" + numberNodes.toString() + ")\n"); 
   
 
  		problems = 0;
@@ -894,11 +960,11 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
 				////tmpconsole.log(downstreamID + " -> " + upstreamID);  
  	 		  
- 	 		  	//alert("setting XY of \n" + downstream.toString() + "\n\n\n" + upstream.toString())
+ 	 		  	//ourAlert("setting XY of \n" + downstream.toString() + "\n\n\n" + upstream.toString())
  	 			downstream.setXY(current.segments[0], current.segments[1]);  //normal
 				upstream.setXY(current.segments[j-2], current.segments[j-1]) //normal  
   
-				downstream.addChild(upstream, current.length, 0, path);  
+				downstream.addChild(upstream, current.length, 0, path, index);  
 				successes++;
 			} catch (error) { 
 				////tmpconsole.log(upstreamID + " -> " + downstreamID);
@@ -913,13 +979,13 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
 			printIndicator += 1;
 			if (printIndicator >= 20000){
-				// tmp comment alert("program alive! have processed 20000 streams since last alert.\n" + problems + " problems\n" + successes + " successes");
+				// tmp comment ourAlert("program alive! have processed 20000 streams since last alert.\n" + problems + " problems\n" + successes + " successes");
 				printIndicator = 0;
 			}
 		}
 		
 		console.log("missing: " + nodesMissingReport)
-		// tmp comment alert("read in the stream segments");
+		// tmp comment ourAlert("read in the stream segments");
 		console.log("\nread in the stream segments.\n");
 		console.log(successes + " successful");
 		console.log("(encountered " + problems + " problems along the way)");
@@ -931,20 +997,20 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			}
 		}
 
-		alert("\nfound " + this.networkSource.length + " roots\n");
+		ourAlert("\nfound " + this.networkSource.length + " roots\n");
 		////tmpconsole.log("root " + root); 
  
 		// finish setting up each network
 		for (index in this.networkSource){ 
 			root = this.networkSource[index];
-			// tmp comment alert("setting up another branch! \n" + root);
+			// tmp comment ourAlert("setting up another branch! \n" + root);
 
 			if (index % 10 == 0){
-				alert("setting up another branch! (" + index + "th) \n" + root);
+				ourAlert("setting up another branch! (" + index + "th) \n" + root);
 			}
 
-			root.addDrawingNodes(0); 
-			//alert("node with " + root.passability.toString() + " passability\n" + root.toString()) 
+			root.addDrawingNodes(0, true); 
+			//ourAlert("node with " + root.passability.toString() + " passability\n" + root.toString()) 
 			root.calculateAccessibility(1.0);
 			root.calculateHabitat(true);
 			this.deselect(root)
@@ -967,7 +1033,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		viewBox[3] = -87.29966458999581
 		refreshViewBox()*/
 
-		alert("setup complete!")
+		ourAlert("setup complete!")
 		//tmpconsole.log("setup complete!")
 	}  
 
@@ -1014,6 +1080,8 @@ var mouseDownX;
 var mouseDownY;
 var mouseUpX;
 var mouseUpY; 
+
+var shouldDisplayAlerts = false;
 
 /** 
  * If two valid numbers are given, translates the specified the amount. 
@@ -1184,16 +1252,45 @@ function refreshViewBox(){
  * Responds a change in the budget slider (once user has stopped dragging the handle)
  **/
 function updateBudget(){
-	// tmp comment alert("budget changing!");
+	// tmp comment ourAlert("budget changing!");
 	if(dataManager.budget == slider.value){
-		// tmp comment alert("actually, the budget is the same!");
+		// tmp comment ourAlert("actually, the budget is the same!");
 	} else {
 		dataManager.budget = slider.value;
 		dataManager.updateSolution();
 	}
 }
  
- 
+
+function ourAlert(text){
+
+	alertsEnabled = true
+	// Chrome
+	if(navigator.userAgent.indexOf("Chrome") != -1 ) 
+    { 
+    	//alert('Chrome');
+    }
+    // Opera
+    else if(navigator.userAgent.indexOf("Opera") != -1 )
+    {
+    	//alert('Opera');
+    }
+    // Firefox
+    else if(navigator.userAgent.indexOf("Firefox") != -1 ) 
+    {
+    	//alert('Firefox');
+    }
+    //Internet Explorer
+    else if((navigator.userAgent.indexOf("MSIE") != -1 ) || (!!document.documentMode == true )) //IF IE > 10
+    {
+    	//alert('IE'); 
+    }   
+
+    if (alertsEnabled && shouldDisplayAlerts){
+		alert(text);
+	}
+} 
+
 
 /**
  * Starts the program, though is not called automatically by javascript. 
@@ -1202,6 +1299,7 @@ function updateBudget(){
  * on the webpage. 
  **/ 
 function main(){ 
+	ourAlert("hello!")
 	//colors = ['#ffff99', '#cff992', '#b1eda3', '#9cddb7', '#88cdcb', '#78bcdb', '#66abe8', '#549af3', '#4089fa', '#2877fe', '#0066ff']
 
 	colorScaleFunction = chroma.interpolate.bezier(['#223535', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue']) 
@@ -1346,8 +1444,8 @@ function main(){
 	paper = new Raphael(document.getElementById('canvas'), width, height); 
 	//paper = new Raphael(canvas, width, height); 
 	/*paper.drag(function(dx, dy, x, y, dragMove){//tmpconsole.log("moving!: change x,y" + dx + "," + dy)},
-		function(x, y, dragStart){//tmpconsole.log("start of mouse drag!!!!!!!!!!!!!"); alert("start drag")},
-		function(dragEnd){//tmpconsole.log("finished mouse drag!!!!!!!!!!!!"); alert("stopped drag")});
+		function(x, y, dragStart){//tmpconsole.log("start of mouse drag!!!!!!!!!!!!!"); ourAlert("start drag")},
+		function(dragEnd){//tmpconsole.log("finished mouse drag!!!!!!!!!!!!"); ourAlert("stopped drag")});
 	*/
 
 	// paper.canvas.mousemove(function(e) {
@@ -1415,7 +1513,7 @@ function main(){
 	// stores reference to the budget slider and adds a change listener
 	slider = document.getElementById("budgetSlider");
 	slider.onchange = updateBudget;
-	//// tmp comment alert("after slider");
+	//// tmp comment ourAlert("after slider");
 
 	// stores references to the information output areas  
 	information = document.getElementById("information");
@@ -1434,7 +1532,7 @@ function main(){
 	//$.get("BarrierAndStreamInfoSubNetwork.json", function(data){	
 		dataManager.init(data);
 		dataManager.addEventsToAllBranches(dataManager.networkSource, dataManager.updateSelected);
-		// tmp comment alert("finished setting things up!")
+		// tmp comment ourAlert("finished setting things up!")
 	});
 	//$.get("BarrierAndStreamInfoReduced.json", function(data){
 	//	dataManager.init(data);

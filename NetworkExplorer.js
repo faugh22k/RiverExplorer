@@ -759,8 +759,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		nodes = info.nodeInfo;  
 		this.OPT = info.optInfo;  
 		dams = info.actions.dams
-		crossings = info.actions.crossings
-		//ourAlert("action options for: \ndams = " + dams + "\ncrossings = " + crossings)
+		crossings = info.actions.crossings 
  
  	 	displayInfo = info.displayInfo 
  	 	this.initDisplaySettings()  
@@ -784,11 +783,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		for (index in this.networkSource){ 
 			root = this.networkSource[index]
 			this.initNetwork(root)  
-			this.selectedNode = root
-
-			if (index % 10 == 0){
-				ourAlert("setting up another branch! (" + index + "th) \n" + root);
-			} 
+			this.selectedNode = root 
 		}
 
 		 
@@ -823,15 +818,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		displayHeight = viewBox[3] - viewBox[1]
 
 		originalXRatio = screenWidth/displayWidth
-		originalYRatio = screenHeight/displayHeight
+		originalYRatio = screenHeight/displayHeight 
 
-		//originalXRatio = originalXRatio/2.7 
-		//originalYRatio = originalYRatio/2.7  
-
-		//viewBox[0] = 5;
-		//viewBox[1] = 5;
-		//viewBox[2] = 500;//200;//130;//800; //150;  
-		//viewBox[3] = 500;//200;//130;//500; //150;   
 		refreshViewBox();   
 	},    
 
@@ -925,22 +913,9 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
   
 				downstream.addChild(upstream, current.length, 0, path, index);  
 				successes++; 
-			} catch (error) { 
-				////tmpconsole.log(upstreamID + " -> " + downstreamID);
-				////tmpconsole.log("upstream " + upstream);
-				////tmpconsole.log("downstream " + downstream);
-				//break;
-				////tmpconsole.log(current)
+			} catch (error) {  
 				problems++;
-			}
-
-			
-
-			printIndicator += 1;
-			if (printIndicator >= 2000){
-				// tmp comment ourAlert("program alive! have processed 20000 streams since last alert.\n" + problems + " problems\n" + successes + " successes");
-				printIndicator = 0; 
-			}
+			} 
 		}
 		
 		console.log("missing: " + nodesMissingReport)
@@ -1060,72 +1035,28 @@ function translate(xChange, yChange){
 }
 
  
-
+/**
+ * Zoom in slightly
+ **/ 
 function zoomIn()
 {
 	zoom(1.1);
 }
 
+/**
+ * Zooms out slightly
+ **/ 
 function zoomOut()
 {
 	zoom(0.9);
 }
-function zoom(factor){
-	/*if(!isNaN(factor)){
-		xRange = viewBox[2] - viewBox[0]  
-		yRange = viewBox[3] - viewBox[1]  
 
-		xRange = xRange / factor; 
-		leftX = viewBox[0]
-		rightX = viewBox[2]
-		originalWidth = rightX - leftX
-		widthChange = xRange - originalWidth
-		leftX += widthChange/2.0
-		rightX = leftX + xRange 
-		
-		//viewBox[2] = viewBox[0] + xRange;
-		viewBox[0] = leftX
-		viewBox[2] = rightX
-
-		yRange = yRange / factor;
-		topY = viewBox[1]
-		bottomY = viewBox[3]
-		originalWidth = bottomY - topY
-		heightChange = yRange - originalWidth
-		topY += heightChange/2.0
-		bottomY = topY + yRange 
-		//viewBox[3] = viewBox[1] + yRange;
-		viewBox[1] = topY
-		viewBox[3] = bottomY
-		refreshViewBox();
-	}
-
-	if(!isNaN(factor)){ 
-		width = viewBox[2] - viewBox[0]
-		height = viewBox[3] - viewBox[1]
-
-		xChange = width/2
-		yChange = height/2
-
-		viewBox[0] += xChange;
-		viewBox[1] += yChange;
-		viewBox[2] += xChange;
-		viewBox[3] += yChange;
-
-
-		width = width/factor
-		height = height/factor
-
-		viewBox[2] = viewBox[0] + width
-		viewBox[3] = viewBox[1] + height
-
-		viewBox[0] -= xChange;
-		viewBox[1] -= yChange;
-		viewBox[2] -= xChange;
-		viewBox[3] -= yChange;
-
-		refreshViewBox();
-	}*/
+/**
+ * Zooms by factor, if factor is a valid number. Suggested (but not required) range 0.6-1.4
+ * numbers < 1 zoom out
+ *         > 1 zoom in
+ **/ 
+function zoom(factor){ 
 
 	if(!isNaN(factor)){ 
 		leftX = viewBox[0]
@@ -1191,30 +1122,34 @@ function updateBudget(){
 	}
 }
  
-
+/**
+ * Alert the specified text if alerts are currently enabled in our program. 
+ **/ 
 function ourAlert(text){
 
 	alertsEnabled = true
+	/*
 	// Chrome
 	if(navigator.userAgent.indexOf("Chrome") != -1 ) 
     { 
-    	//alert('Chrome');
+    	alert('Chrome');
     }
     // Opera
     else if(navigator.userAgent.indexOf("Opera") != -1 )
     {
-    	//alert('Opera');
+    	alert('Opera');
     }
     // Firefox
     else if(navigator.userAgent.indexOf("Firefox") != -1 ) 
     {
-    	//alert('Firefox');
+    	alert('Firefox');
     }
     //Internet Explorer
     else if((navigator.userAgent.indexOf("MSIE") != -1 ) || (!!document.documentMode == true )) //IF IE > 10
     {
-    	//alert('IE'); 
+    	alert('IE'); 
     }   
+    */
 
     if (alertsEnabled && shouldDisplayAlerts){ 
 		alert(text);  
@@ -1263,41 +1198,10 @@ function openJQueryAlert(text){
 	}); 
 }
 
-
 /**
- * Starts the program, though is not called automatically by javascript. 
- *
- * Initializes variables for NetworkExplorer and adds listeners to items
- * on the webpage. 
+ * Add mouse events to the page (hover, drag, click)
  **/ 
-function main(){ 
-	ourAlert("hello!")
-	//colors = ['#ffff99', '#cff992', '#b1eda3', '#9cddb7', '#88cdcb', '#78bcdb', '#66abe8', '#549af3', '#4089fa', '#2877fe', '#0066ff']
-
-	colorScaleFunction = chroma.interpolate.bezier(['#223535', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue']) 
-		//(['lightyellow', 'yellowgreen', 'turquoise', 'dodgerblue'])
-		//(['lightyellow', 'greenyellow', 'turquoise', 'dodgerblue'])
-		//(['lightyellow', 'yellowgreen', 'deepskyblue', 'dodgerblue'])
-		
-		// blue to gray: each subsequent entry goes to a darker gray
-		//(['darkslategray', 'teal', 'cornflowerblue', 'deepskyblue']) 
-		//(['#223535', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue'])
-		//(['#1c2929', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue']) 
-
-
-	// store a reference to the canvas, get the context for drawing,
-	// and add a mouse listener 
-	width = 752;//470;
-	height = 470; 
-
-	viewBox = [5, 5, 3000, 3000];
-	//viewBox = [0, 0, 80, 80];
-
-
-
-	//=======================================================================================
-	//========================= Mouse Events ================================================
-	//=======================================================================================
+function addMouseEvents(){  
 
 	// On window load, add a bunch of listeners for mouse events
 	$(window).load(function () {
@@ -1406,31 +1310,13 @@ function main(){
         canvas.addEventListener('mousewheel', mouseZoomListener, false); 
         //canvas.addEventListener('mousedrag', mouseDragListener, false);
 
-    });
+    }); 
+}
 
-	//=======================================================================================
-	//=========================End of Mouse Events ==========================================
-	//=======================================================================================	
-
-	canvas = document.getElementById('canvas') 
-	paper = new Raphael(document.getElementById('canvas'), width, height); 
-	//paper = new Raphael(canvas, width, height); 
-	/*paper.drag(function(dx, dy, x, y, dragMove){//tmpconsole.log("moving!: change x,y" + dx + "," + dy)},
-		function(x, y, dragStart){//tmpconsole.log("start of mouse drag!!!!!!!!!!!!!"); ourAlert("start drag")},
-		function(dragEnd){//tmpconsole.log("finished mouse drag!!!!!!!!!!!!"); ourAlert("stopped drag")});
-	*/
-
-	// paper.canvas.mousemove(function(e) {
-	//   var offset = $(this).offset(), offsetX = e.pageX - offset.left, offsetY = e.pageY - offset.top;
-	//   //do something with offsetX and offsetY
-	//   //tmpconsole.log("moving");
-
-	// });
-
-    // Setting preserveAspectRatio to 'none' lets you stretch the SVG
-	paper.canvas.setAttribute('preserveAspectRatio', 'none');
-
-
+/**
+ * Add events to zoom in and out using - and + keys. 
+ **/ 
+function addKeyPressEvents(){
 	$(document).keydown(function(event) {
 	
 
@@ -1466,26 +1352,66 @@ function main(){
 		//
 	
 	});
-	
-	//paper.setViewBox(0, 0, width, height );
-	refreshViewBox();
- 
-	// Setting preserveAspectRatio to 'none' lets you stretch the SVG
-	paper.canvas.setAttribute('preserveAspectRatio', 'none');
- 
-	// initialize DataManager instance
-	dataManager = new DataManager(null, null, null, null);  
-	//dataManager.init();
+}
 
-
+/**
+ * Add events to all buttons on page (zoom in and out buttons)
+ **/ 
+function addButtonEvents(){
 	// add click listeners to the zoom and pan buttons 
 	document.getElementById("zoomIn").onclick = zoomIn; 
 	document.getElementById("zoomOut").onclick = zoomOut;  
+}
+
+/**
+ * Add all events (mouse, key, and button)
+ **/ 
+function addAllPageEvents(){
+	addMouseEvents()
+	addKeyPressEvents()
+	addButtonEvents()
+}
+
+/**
+ * Set up raphael paper element, and create the color scale for accessibility. 
+ **/ 
+function initDisplaySettings(){
+	colorScaleFunction = chroma.interpolate.bezier(['#223535', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue'])  
+
+	width = 752;//470;
+	height = 470; 
+
+	viewBox = [5, 5, 3000, 3000]; 
+ 
+	canvas = document.getElementById('canvas') 
+	paper = new Raphael(document.getElementById('canvas'), width, height);  
+
+    // Setting preserveAspectRatio to 'none' lets you stretch the SVG
+	paper.canvas.setAttribute('preserveAspectRatio', 'none');
+ 
+	refreshViewBox()
+}
+
+
+
+/**
+ * Starts the program, though is not called automatically by javascript. 
+ *
+ * Initializes variables for NetworkExplorer and adds listeners to items
+ * on the webpage. 
+ **/ 
+function main(){  
+
+	initDisplaySettings() 
+	addAllPageEvents()
+ 
+	// initialize DataManager instance
+	dataManager = new DataManager(null, null, null, null);  
+	//dataManager.init(); 
 
 	// stores reference to the budget slider and adds a change listener
 	slider = document.getElementById("budgetSlider");
-	slider.onchange = updateBudget;
-	//// tmp comment ourAlert("after slider");
+	slider.onchange = updateBudget; 
 
 	// stores references to the information output areas  
 	information = document.getElementById("information");
@@ -1507,12 +1433,7 @@ function main(){
 		dataManager.init(data);
 		dataManager.addEventsToAllBranches(dataManager.networkSource);
 		// tmp comment ourAlert("finished setting things up!")
-	});
-	//$.get("BarrierAndStreamInfoReduced.json", function(data){
-	//	dataManager.init(data);
-	//	dataManager.addEvents(dataManager.networkSource, dataManager.updateSelected);
-	//});
-	//$.get("BarrierAndStreamInfoReduced.json", dataManager.init);
+	}); 
   
 }
  

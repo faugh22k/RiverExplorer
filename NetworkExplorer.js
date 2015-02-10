@@ -673,10 +673,10 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			}
 		}
 
-		ourAlert("includedNodes: \n\n" + includedNodes)
-		ourAlert("excludedNodes: \n\n" + excludedNodes)  
- 		if (someExcluded){
- 			//ourAlert("some nodes have been excluded from opt!\n\n" + excludedNodes)
+		  
+ 		if (someExcluded){ 
+ 			ourAlert("includedNodes: \n\n" + includedNodes)
+			ourAlert("excludedNodes: \n\n" + excludedNodes) 
  		}
 	} 
 
@@ -744,8 +744,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	/**
 	 * Constructs the river network from json data 
 	 **/ 
-	DataManager.prototype.init = function  (data){ 
-
+	DataManager.prototype.init = function  (data){  
 		// construct network from json
 
 		// use node id to store each node in a dictionary
@@ -793,6 +792,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		summary.innerHTML = this.createSummary()  
 
 		this.checkOPT();  
+
+		initTransformElements()
 
 		ourAlert("setup complete!") 
 	},    
@@ -959,6 +960,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
  
 var dataManager;
 var canvas;
+var svgPan;
+var svgScale;
 var context; 
 var budget;
 var slider; 
@@ -976,6 +979,9 @@ var originalXRatio;
 var originalYRatio; 
 var viewRectangle;
 var colors;
+var translateX;
+var translateY;
+var scale;
 
 var mouseIsDown = false;
 var mouseDownX;
@@ -996,7 +1002,7 @@ function translate(xChange, yChange){
 	// NaN does not equal itself, so isNaN is needed to make sure there are 
 	// 2 valid numbers. 
 	if (!isNaN(xChange) && !isNaN(yChange)) {  
-	    screenWidth = canvas.offsetWidth
+	    /*screenWidth = canvas.offsetWidth
 		screenHeight = canvas.offsetHeight
 
 		console.log("screenWidth: " + screenWidth + "\nscreenHeight: " + screenHeight)
@@ -1030,7 +1036,14 @@ function translate(xChange, yChange){
 		viewBox[1] += yChange;
 		viewBox[2] += xChange;
 		viewBox[3] += yChange;
-		refreshViewBox();
+		refreshViewBox();*/
+
+		//alert("translateX = " + translateX + "\ntranslateY = " + translateY)
+		translateX += xChange
+		translateY += yChange
+		//alert("translateX = " + translateX + "\ntranslateY = " + translateY)
+
+		svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')')    
 	};
 }
 
@@ -1040,7 +1053,8 @@ function translate(xChange, yChange){
  **/ 
 function zoomIn()
 {
-	zoom(1.1);
+	//zoom(1.1);
+	zoom(0.1) 
 }
 
 /**
@@ -1048,7 +1062,8 @@ function zoomIn()
  **/ 
 function zoomOut()
 {
-	zoom(0.9);
+	//zoom(0.9);
+	zoom(-0.1)
 }
 
 /**
@@ -1059,7 +1074,7 @@ function zoomOut()
 function zoom(factor){ 
 
 	if(!isNaN(factor)){ 
-		leftX = viewBox[0]
+		/*leftX = viewBox[0]
 		rightX = viewBox[2]
 		topY = viewBox[1]
 		bottomY = viewBox[3]
@@ -1087,7 +1102,9 @@ function zoom(factor){
 		viewBox[2] = rightX
 		viewBox[3] = bottomY
 
-		refreshViewBox();
+		refreshViewBox();*/
+		scale += factor
+		svgScale.setAttribute('transform', 'scale(' + scale + ')') 
 	}
 }
 
@@ -1152,18 +1169,7 @@ function ourAlert(text){
     */
 
     if (alertsEnabled && shouldDisplayAlerts){ 
-		alert(text);  
-		
-		/*
-		// use js library apprise to display an alert. 
-		// the main problem is that only the default alert method is a blocking one, and we want blocking
-		alertClosed = false;
-		apprise(text, {'verify':true}, function (alertResult){
-			if (!alertResult){
-				shouldDisplayAlerts = false;
-				alertClosed = true;
-			}
-		})*/  
+		alert(text);   
 	} 
 	 
 	if (displayAlertsInConsole){
@@ -1257,7 +1263,7 @@ function addMouseEvents(){
         	    mouseDownY = currenty;
 
         		//translate(xChange*xScale*0.5,yChange*yScale*0.5);
-        		translate(xChange,yChange);
+        		translate(xChange*scale,yChange*scale);
 
             //tmpconsole.log("xChange:" + xChange + " and yChange   " + yChange);
                         //tmpconsole.log("viewbox xrange   :" + xRange + " and yRange   " + yRange);
@@ -1336,10 +1342,10 @@ function addKeyPressEvents(){
 			translate(0, -10) 
 		} 
 		else if(event.keyCode == arrowKeys["plus"]){
-			zoom(1.1) 
+			zoom(0.1) 
 		} 
 		else if(event.keyCode == arrowKeys["minus"]){
-			zoom(0.9)
+			zoom(-0.1)
 		} else {
 			irrelevantKey = true
 		}
@@ -1393,6 +1399,38 @@ function initDisplaySettings(){
 }
 
 
+function initTransformElements(){  
+
+	translateX = 0
+	translateY = 0   
+	scale = 1
+
+	svgPan = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
+	svgPan.setAttribute('transform', 'translate(0,0)');  
+	svgPan.setAttribute('transform', 'translate(20,20)');   
+
+	svgScale = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
+	svgScale.setAttribute('transform', 'scale(1)');  
+	
+	var svgComponents = canvas.childNodes
+	var svgComponent = svgComponents[0] 
+
+	$(svgComponent).wrapInner(svgPan)
+
+	svgPan.setAttribute('transform', 'translate(40,40)');   
+
+	var wrapper = svgComponent.childNodes[0]
+
+	wrapper.setAttribute('transform', 'translate(40,40)');  
+
+	// $(svgPan).wrapInner(svgScale) does not work
+	$(wrapper).wrapInner(svgScale) 
+
+	svgPan = wrapper
+	svgScale = wrapper.childNodes[0]
+}
+
+
 
 /**
  * Starts the program, though is not called automatically by javascript. 
@@ -1432,9 +1470,8 @@ function main(){
 	//$.get("BarrierAndStreamInfoSubNetwork.json", function(data){	
 		dataManager.init(data);
 		dataManager.addEventsToAllBranches(dataManager.networkSource);
-		// tmp comment ourAlert("finished setting things up!")
-	}); 
-  
+		// tmp comment ourAlert("finished setting things up!") 
+	});  
 }
  
 // start everything!    

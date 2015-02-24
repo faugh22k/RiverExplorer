@@ -14,7 +14,11 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	this.possibleActions = possibleActions;
 	this.passability = passability; // switch to see colors 0.93;   
 	this.passabilityImprovement = 0.0;
-	this.improvedPassability = this.passability;    
+	this.improvedPassability = this.passability;   
+	this.accessibilityFromRoot;
+	this.accessibilityLeaving;
+	this.improvedAccessibilityFromRoot;
+	this.improvedAccessibilityLeaving; 
 	this.x = x;
 	this.y = y; 
 	this.children = new Array();
@@ -67,12 +71,12 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	 **/
 	Node.prototype.setDrawingNode = function (drawing){ 
 		this.nodeDrawing = drawing;
-		this.nodeDrawing.attr({r:10}); 
+		this.nodeDrawing.attr({r:20}); 
 		pairedNode = this;
 		this.needsNodeDrawing = false
 		this.nodeDrawing.click(function(){ 
  			dataManager.updateSelected(pairedNode);
- 		}); 
+ 		});  
 	},
 
 	/**
@@ -81,7 +85,11 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	Node.prototype.addDrawingNodes = function(count, override){ 
 		if (this.needsNodeDrawing && (this.isBarrier || override)){
 			this.needsNodeDrawing = false;
-			this.nodeDrawing = paper.circle(this.x,this.y,1);
+			if (this.barrierType == 2){
+				this.nodeDrawing = paper.circle(this.x,this.y,5);
+			} else {
+				this.nodeDrawing = paper.circle(this.x,this.y,4);
+			}
 			this.nodeDrawing.attr({fill: "green"}); 
 		} 
 		
@@ -128,8 +136,8 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 
 			this.improvedPassability = this.possibleActions[action].improvedPassability 
 			this.currentAction = action
-			// *** redundent coloring? color used for debugging? 
-			this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".90"})  
+			// *** redundent coloring? color used for debugging? 2015 commentted out
+			//this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".90"})  
 		} 
 
 		// mark node as needing repaint if the passability has changed
@@ -265,19 +273,20 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		// selected
 		// color the node  
 		if (!this.needsNodeDrawing){
-			if (!this.isBarrier){
+			if (!this.isBarrier){ 
+				// the only node that isn't a barrier and is being colored is the root
 				this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".70"});
 			} else {
 				// no action taken
 				if (this.currentAction == -1){
 					// crossing, no action taken
 					if(this.barrierType == 1){
-						this.nodeDrawing.attr({fill: "#18500F", stroke:"transparent","opacity":"0.85"/*"1.0"*/}); 
+						this.nodeDrawing.attr({fill: "#087e7d"/*"#18500F"*/, stroke:"transparent","opacity":"0.85"/*"1.0"*/}); 
 					} 
 					// dam, no action taken
-					else {
-						this.nodeDrawing.attr({fill: "#78c44c", stroke:"transparent","opacity":"0.85"/*"1.0"*/}); 
-					}
+					else { 
+						this.nodeDrawing.attr({fill: "#78c44c", stroke:"transparent","opacity":"0.85"/*"1.0"*/});  
+					} 
 				} 
 				// some action taken (dam or crossing)
 				else {
@@ -369,6 +378,60 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	 * by multiplying initial accessibility (comingIN) by the 
 	 * passability. Then call itself for the node's descendants.  
 	 **/ 
+	Node.prototype.calculateAccessibilityNewVersion = function(comingIn){
+		/*
+		this.accessibilityFromRoot;
+		this.accessibilityLeaving;
+		this.improvedAccessibilityFromRoot;
+		this.improvedAccessibilityLeaving; 
+		*/
+
+		this.accessibilityFromRoot = comingIn
+		this.accessibilityLeaving = coming * this.passability
+		this.improvedAccessibilityFromRoot = this.accessibilityFromRoot
+		this.improvedAccessibilityLeaving = this.accessibilityLeaving 
+
+		originalAccessibility = -1
+		compare = false
+		if (this.children != null && this.children[2][0] != null){
+			originalAccessibility = this.children[2][0]
+			compare = true
+		}
+
+		//ourAlert("calculating accessibility. \ncomingIn = " + comingIn + "\npassability = " + this.passability + "\nimprovedPassability = " + this.improvedPassability + "\n\ngoing out should be: " + (comingIn*this.improvedPassability));
+		if(this.isBarrier){
+
+			//accessibility = comingIn * (this.passability + this.passabilityImprovement);
+			accessibility = comingIn * this.improvedPassability; 
+			
+			// 2015 this is debug coloring right?
+			//colorString = this.getColor(accessibility)
+			//this.nodeDrawing.attr({fill: "#FF4500", stroke:"transparent","opacity":".55"}); 
+			//this.nodeDrawing.attr({fill: "#1e90ff", stroke:"transparent","opacity":".55"}); 
+		} else { 
+			accessibility = comingIn;
+		} 
+
+		// if the node has children, it will need to be repainted 
+		// if the accessibility has changed
+		if (compare && originalAccessibility != accessibility){
+			this.requireRepaint = true
+		}
+
+		// 2015 do these loops need to be separate? 
+		for (index in this.children[0]){
+			this.children[2][index] = accessibility;    
+		}
+		for (index in this.children[0]){ 
+			this.children[0][index].calculateAccessibility(this.children[2][index]);   
+		}
+	},
+
+	/**
+	 * Calculate the accessibility of the node's child segments 
+	 * by multiplying initial accessibility (comingIN) by the 
+	 * passability. Then call itself for the node's descendants.  
+	 **/ 
 	Node.prototype.calculateAccessibility = function(comingIn){
 		originalAccessibility = -1
 		compare = false
@@ -389,7 +452,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			//this.nodeDrawing.attr({fill: "#1e90ff", stroke:"transparent","opacity":".55"}); 
 		} else { 
 			accessibility = comingIn;
-		}
+		} 
 
 		// if the node has children, it will need to be repainted 
 		// if the accessibility has changed
@@ -794,6 +857,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		this.checkOPT();  
 
 		initTransformElements()
+		transformToDisplayArea(0,0, displayInfo.maxX, displayInfo.maxY)
 
 		ourAlert("setup complete!") 
 	},    
@@ -804,7 +868,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	DataManager.prototype.initDisplaySettings = function  (){ 
 		//ourAlert("maxX: " + displayInfo.maxX + "\nmaxY: " + displayInfo.maxY)
  		
- 		if (displayInfo == null){
+ 		/*if (displayInfo == null){
  			displayInfo = {maxX: 100, maxY: 100};
  		}
 
@@ -821,7 +885,29 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		originalXRatio = screenWidth/displayWidth
 		originalYRatio = screenHeight/displayHeight 
 
-		refreshViewBox();   
+		refreshViewBox();   */
+
+		/*colorScaleFunction = chroma.interpolate.bezier(['#223535', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue'])  
+
+
+		browserWidth = $(window).width()
+		browserHeight = $(window).height()
+
+		width = browserWidth - 300 //752;//470;
+		height = browserHeight - 200 //470; 
+
+		alert("viewbox width, height: " + width + "\n" + height + "\n\n\nbrowser width, height: " + browserWidth + "\n" + browserHeight)
+
+		viewBox = [0, 0, displayInfo.maxX, displayInfo.maxY] 
+ 
+		canvas = document.getElementById('canvas') 
+		paper = new Raphael(document.getElementById('canvas'), width, height);   
+
+    	// Setting preserveAspectRatio to 'none' lets you stretch the SVG
+		paper.canvas.setAttribute('preserveAspectRatio', 'none');
+ 
+		refreshViewBox() 
+		addAllPageEvents()*/
 	},    
 
 	/**
@@ -832,6 +918,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		// read in all the nodes, create objects for them, and store them into a dictionary.  
 		allNodes = {};
 		numberNodes = 0;
+		barrierTypes = {"0":0, "1":0, "2":0};
 		for (index in nodes){
 			current = nodes[index];
 			currentID = current.ID;  
@@ -840,15 +927,23 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			action = null
 			if(current.barrierType == 1){
 				action = crossings 
+				barrierTypes["1"] += 1;
 			} else if (current.barrierType == 2){ 
 				action = dams 
-			} 
+				barrierTypes["2"] += 1;
+			} else {
+				barrierTypes["0"] += 1;
+			}
  
  			newNode = new Node(currentID, current.isBarrier, current.barrierType, action, current.passability, 0, 0, null, null);         
 			allNodes[currentID] = newNode 
    
 			numberNodes++;
 		} 
+
+		console.log("barrier type counts: 0: " + barrierTypes["0"] + ", 1: " + barrierTypes["1"] + ", 2: " + barrierTypes["2"])
+   			alert("barrier type counts: 0: " + barrierTypes["0"] + ", 1: " + barrierTypes["1"] + ", 2: " + barrierTypes["2"]) 
+
 		ourAlert("\nread in the nodes. (" + numberNodes.toString() + ")\n");  
 		return allNodes
 	},    
@@ -905,7 +1000,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
  
  				// add the path to the drawing canvas
 				path = paper.path(pathDirections);  
-				path.attr({"stroke-width":2});
+				path.attr({"stroke-width":5});
 				path.attr({stroke:"#FF4D4D"});  
 
 				// use the start and end points of the stream's path for the node's XY coordinates. 
@@ -937,7 +1032,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		root.calculateHabitat(true);
 		this.deselect(root)
 		root.setColors();
-		root.nodeDrawing.attr({r:2/*, fill:"blue"*/});
+		root.nodeDrawing.attr({r:20/*, fill:"blue"*/});
 		//this.selectedNode = root;   
 	}
 
@@ -974,6 +1069,9 @@ var width;
 var height;
 var back;
 
+var svgWidth;
+var svgHeight;
+
 var viewBox;
 var originalXRatio; 
 var originalYRatio; 
@@ -982,6 +1080,7 @@ var colors;
 var translateX;
 var translateY;
 var scale;
+var originalScale;
 
 var mouseIsDown = false;
 var mouseDownX;
@@ -1002,46 +1101,8 @@ function translate(xChange, yChange){
 	// NaN does not equal itself, so isNaN is needed to make sure there are 
 	// 2 valid numbers. 
 	if (!isNaN(xChange) && !isNaN(yChange)) {  
-	    /*screenWidth = canvas.offsetWidth
-		screenHeight = canvas.offsetHeight
-
-		console.log("screenWidth: " + screenWidth + "\nscreenHeight: " + screenHeight)
-
-		displayWidth = viewBox[2] - viewBox[0]
-		displayHeight = viewBox[3] - viewBox[1]
-
-		console.log("displayWidth: " + displayWidth + "\ndisplayHeight: " + displayHeight)
-
-		widthDifference = screenWidth/displayWidth 
-		heightDifference = screenHeight/displayHeight 
-
-		console.log("widthDifference: " + widthDifference + "\nheightDifference: " + heightDifference)
-
-		xRatioChange = widthDifference/originalXRatio
-		yRatioChange = heightDifference/originalYRatio
-
-		//xRatioChange = xRatioChange/0.9
-		//yRatioChange = yRatioChange/0.9
-
-		console.log("originalXRatio: " + originalXRatio + "\noriginalYRatio: " + originalYRatio) 
-
-		console.log("xRatioChange: " + xRatioChange + "\nyRatioChange: " + yRatioChange) 
- 		 
-		xChange = xChange/xRatioChange
-		yChange = yChange/yRatioChange
-
-		console.log("xChange: " + xChange + "\nyChange: " + yChange) 
-
-		viewBox[0] += xChange;
-		viewBox[1] += yChange;
-		viewBox[2] += xChange;
-		viewBox[3] += yChange;
-		refreshViewBox();*/
-
-		//alert("translateX = " + translateX + "\ntranslateY = " + translateY)
 		translateX += xChange
-		translateY += yChange
-		//alert("translateX = " + translateX + "\ntranslateY = " + translateY)
+		translateY += yChange 
 
 		svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')')    
 	};
@@ -1066,6 +1127,36 @@ function zoomOut()
 	zoom(-0.1)
 }
 
+function transformToDisplayArea(leftX, topY, rightX, bottomY){
+	displayedWidth = rightX - leftX;
+	displayedHeight = bottomY - topY;
+
+
+
+	widthRatio = svgWidth/displayedWidth
+	heightRatio = svgHeight/displayedHeight
+	//ratio = (widthRatio + heightRatio)/2
+
+	if (heightRatio < widthRatio){
+		ratio = heightRatio
+	} else {
+		ratio = widthRatio
+	}
+
+	svgScale.setAttribute('transform', 'scale(' + ratio + ')') 
+	scale = ratio
+	originalScale = ratio
+
+	xChange = leftX - translateX
+	yChange = topY - translateY
+
+	translateX += xChange
+	translateY += yChange 
+
+	svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')') 
+
+}
+
 /**
  * Zooms by factor, if factor is a valid number. Suggested (but not required) range 0.6-1.4
  * numbers < 1 zoom out
@@ -1073,45 +1164,26 @@ function zoomOut()
  **/ 
 function zoom(factor){ 
 
-	if(!isNaN(factor)){ 
-		/*leftX = viewBox[0]
-		rightX = viewBox[2]
-		topY = viewBox[1]
-		bottomY = viewBox[3]
+	if(!isNaN(factor) && (scale + factor) >= 0){  
+		widthChange = (svgWidth * scale) - (svgWidth * (scale + factor)) 
+		heightChange = (svgHeight * scale) - (svgHeight * (scale + factor)) 
 
-		width = rightX - leftX
-		height = bottomY - topY 
-
-		newWidth = width / factor
-		newHeight = height / factor
-
-		widthChange = newWidth - width
-		heightChange = newHeight - height
-
-		xChange = widthChange/2 
-		yChange = heightChange/2
-
-		leftX += xChange
-		topY += yChange
-
-		rightX = leftX + newWidth
-		bottomY = topY + newHeight
-
-		viewBox[0] = leftX
-		viewBox[1] = topY
-		viewBox[2] = rightX
-		viewBox[3] = bottomY
-
-		refreshViewBox();*/
 		scale += factor
 		svgScale.setAttribute('transform', 'scale(' + scale + ')') 
+
+		translateX += widthChange//2
+		translateY += heightChange//2
+
+
+
+		svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')') 
 	}
 }
 
 /**
  * Updates Raphael/SVG's viewbox properties to shift the visible portion of the canvas.
  **/
-function refreshViewBox(){
+function refreshViewBox(){ 
 	svg = document.getElementsByTagName("svg")[0];
 	//svg.viewBox = viewBox[0].toString() + " " + viewBox[1].toString() + " " + viewBox[2].toString() + " " + viewBox[3].toString() + " ";   
 	
@@ -1262,8 +1334,21 @@ function addMouseEvents(){
         	    mouseDownX = currentx;
         	    mouseDownY = currenty;
 
+        	    // if negative, zoomed out; if positive, zoomed in
+        	    scaleDifference = scale - originalScale
+
+        	    // zoomed out: more is displaying on screen, so translate by more
+        	    if(scaleDifference < 0){
+        	    	scaleDifference = 0 - scaleDifference
+        	    	xChange *= (1 + scaleDifference)
+        	    	yChange *= (1 + scaleDifference)
+        	    } else {
+        	    	xChange *= (1 - scaleDifference)
+        	    	yChange *= (1 - scaleDifference)
+        	    }
+
         		//translate(xChange*xScale*0.5,yChange*yScale*0.5);
-        		translate(xChange*scale,yChange*scale);
+        		translate(xChange,yChange);
 
             //tmpconsole.log("xChange:" + xChange + " and yChange   " + yChange);
                         //tmpconsole.log("viewbox xrange   :" + xRange + " and yRange   " + yRange);
@@ -1376,7 +1461,7 @@ function addAllPageEvents(){
 	addMouseEvents()
 	addKeyPressEvents()
 	addButtonEvents()
-}
+} 
 
 /**
  * Set up raphael paper element, and create the color scale for accessibility. 
@@ -1384,18 +1469,25 @@ function addAllPageEvents(){
 function initDisplaySettings(){
 	colorScaleFunction = chroma.interpolate.bezier(['#223535', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue'])  
 
-	width = 752;//470;
-	height = 470; 
 
-	viewBox = [5, 5, 3000, 3000]; 
+	browserWidth = $(window).width()
+	browserHeight = $(window).height()
+
+	width = browserWidth - 300 //752;//470;
+	height = browserHeight - 200 //470; 
+ 	 
+	viewBox = [0, 0, width, height] 
  
 	canvas = document.getElementById('canvas') 
-	paper = new Raphael(document.getElementById('canvas'), width, height);  
+	paper = new Raphael(document.getElementById('canvas'), width, height);   
+
+	svgWidth = width
+	svgHeight = height
 
     // Setting preserveAspectRatio to 'none' lets you stretch the SVG
 	paper.canvas.setAttribute('preserveAspectRatio', 'none');
  
-	refreshViewBox()
+	refreshViewBox() 
 }
 
 
@@ -1440,6 +1532,9 @@ function initTransformElements(){
  **/ 
 function main(){  
 
+	// 2015 commented out: want initial display  to be according to the max x,y values
+	// so must call in init() when we have the data
+	// cannot add events until we have created the canvas, which we do in initDisplaySettings
 	initDisplaySettings() 
 	addAllPageEvents()
  
@@ -1462,7 +1557,8 @@ function main(){
 
 	// change the source file for the data
 	// $.get("BarrierAndStreamInfoOpt.json", function(data){  
-	 $.get("BarrierAndStreamInfoOptFlipped.json", function(data){  
+	// $.get("BarrierAndStreamInfoOptFlipped.json", function(data){  
+	 $.get("BarrierAndStreamInfoOptScriptUpdated.json", function(data){     
  	//$.get("BarrierAndStreamInfoOpt50.json", function(data){ 
 	//$.get("BarrierAndStreamInfoOptReduced.json", function(data){ 
 	//$.get("BarrierAndStreamInfoOptNetworkReduced2.json", function(data){  

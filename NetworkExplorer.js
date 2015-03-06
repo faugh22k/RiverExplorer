@@ -38,7 +38,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	this.previousHabitat = -1;
 	this.originalHabitat = -1;
 	this.currentHabitat = -1;  
-	this.requireRepaint = true;
+	this.requireRepaint = true; 
 }
   
 
@@ -71,7 +71,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	 **/
 	Node.prototype.setDrawingNode = function (drawing){ 
 		this.nodeDrawing = drawing;
-		this.nodeDrawing.attr({r:20}); 
+		//this.nodeDrawing.attr({r:20}); 
 		pairedNode = this;
 		this.needsNodeDrawing = false
 		this.nodeDrawing.click(function(){ 
@@ -88,7 +88,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			if (this.barrierType == 2){
 				this.nodeDrawing = paper.circle(this.x,this.y,5);
 			} else {
-				this.nodeDrawing = paper.circle(this.x,this.y,4);
+				this.nodeDrawing = paper.circle(this.x,this.y,3);
 			}
 			this.nodeDrawing.attr({fill: "green"}); 
 		} 
@@ -243,6 +243,22 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		}
 	},
 
+	Node.prototype.getNodeRadius = function(){
+		if(this.currentAction == -1){
+			if (!this.isBarrier || this.barrierType == 1){
+				return crossingSize
+			} else {
+				return damSize
+			}
+		} else {
+			if (!this.isBarrier || this.barrierType == 1){
+				return crossingSize + 2
+			} else {
+				return damSize + 2
+			}
+		}
+	},
+
 	/**
 	 * Set the colors of the node drawing and the colors of stream segments
 	 * leading to the child nodes; then call the function for all descendants. 
@@ -270,27 +286,40 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			return  
 		}
 
+		nonBarrier = "#003366"			// blue
+		crossingNoAction = "#FFFF66"	// yellow			"#087e7d"
+		damNoAction = "#FF6E2C"			// orange			"#78c44c"
+		crossingAction = "#78c44c"		// green		//"#087e7d"		// turquoise		"#FFFF66"
+		damAction = "#8D198D"//"#9966FF" 			// purple"		//"#78c44c"			// green			"#FFFF66"
+
+		nodeSize = this.getNodeRadius()
+
 		// selected
 		// color the node  
 		if (!this.needsNodeDrawing){
 			if (!this.isBarrier){ 
 				// the only node that isn't a barrier and is being colored is the root
-				this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".70"});
+				this.nodeDrawing.attr({fill: nonBarrier, stroke:"transparent","opacity":".70"});
 			} else {
 				// no action taken
 				if (this.currentAction == -1){
 					// crossing, no action taken
 					if(this.barrierType == 1){
-						this.nodeDrawing.attr({fill: "#087e7d"/*"#18500F"*/, stroke:"transparent","opacity":"0.85"/*"1.0"*/}); 
+						this.nodeDrawing.attr({fill: crossingNoAction /*"#18500F"*/, stroke:"transparent","opacity":"0.75", r:nodeSize}); 
 					} 
 					// dam, no action taken
 					else { 
-						this.nodeDrawing.attr({fill: "#78c44c", stroke:"transparent","opacity":"0.85"/*"1.0"*/});  
+						this.nodeDrawing.attr({fill: damNoAction, stroke:"transparent","opacity":"0.80", r:nodeSize});  
 					} 
 				} 
 				// some action taken (dam or crossing)
 				else {
-					this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".85"});
+					if(this.barrierType == 1){
+						this.nodeDrawing.attr({fill: crossingAction, stroke:"transparent","opacity":".80",r:nodeSize});
+					} 
+					else {
+						this.nodeDrawing.attr({fill: damAction, stroke:"transparent","opacity":".85",r:nodeSize});
+					}
 				}
 			}
 		}
@@ -298,7 +327,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		// color the paths to the children (river segments)
 		for (index in this.children[0]){ 
 			colorString = this.getColor(this.children[2][index])
-			this.children[3][index].attr({stroke:colorString}); 
+			this.children[3][index].attr({stroke:colorString,"stroke-width":selectedStreamWidth}); 
 		}
 	},
 
@@ -310,26 +339,33 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			return    
 		} 
 
+		pathToRootBarrier = "#003366"		// light green
+		pathToRootNonBarrier = "#669900"	// blue
+		unselectedNode = "#D4D4D4"			// grey
+		pathToRootStream = "black"			// black
+		unselectedStream = "#A0A0A0"		// grey
+		nodeSize = this.getNodeRadius()
+
 		if (!this.needsNodeDrawing){
 			if(this.partiallySelected){
 				// on the path to the root 
 				if(!this.isBarrier){
-					this.nodeDrawing.attr({fill: "#003366", stroke:"transparent","opacity":".55"}); 
+					this.nodeDrawing.attr({fill:pathToRootBarrier, stroke:"transparent","opacity":".55", r:nodeSize}); 
 				} else {
-					this.nodeDrawing.attr({fill: "#669900", stroke:"transparent","opacity":".50"}); 
+					this.nodeDrawing.attr({fill: pathToRootNonBarrier, stroke:"transparent","opacity":".50", r:nodeSize}); 
 				}
 			} else {
 				// completely unselected
-				this.nodeDrawing.attr({fill: "#D4D4D4", stroke:"transparent","opacity":".30"});  
+				this.nodeDrawing.attr({fill: unselectedNode, stroke:"transparent","opacity":".30", r:nodeSize});  
 			} 
 		}
  
 		for (index in this.children[0]){  
 			// if this and the child are partiallySelected, color the stream black (path to root)
 			if(this.partiallySelected && (this.children[0][index].partiallySelected || this.children[0][index].selected)){
-				this.children[3][index].attr({stroke:"black"}); 
+				this.children[3][index].attr({stroke:pathToRootStream}); 
 			} else { 
-				this.children[3][index].attr({stroke:"#A0A0A0"}); // grey
+				this.children[3][index].attr({stroke:unselectedStream,"stroke-width":deselectedStreamWidth}); // grey
 			}  
 		} 
 	},
@@ -941,8 +977,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			numberNodes++;
 		} 
 
-		console.log("barrier type counts: 0: " + barrierTypes["0"] + ", 1: " + barrierTypes["1"] + ", 2: " + barrierTypes["2"])
-   			alert("barrier type counts: 0: " + barrierTypes["0"] + ", 1: " + barrierTypes["1"] + ", 2: " + barrierTypes["2"]) 
+		//console.log("barrier type counts: 0: " + barrierTypes["0"] + ", 1: " + barrierTypes["1"] + ", 2: " + barrierTypes["2"])
+   		ourAlert("barrier type counts: 0: " + barrierTypes["0"] + ", 1: " + barrierTypes["1"] + ", 2: " + barrierTypes["2"]) 
 
 		ourAlert("\nread in the nodes. (" + numberNodes.toString() + ")\n");  
 		return allNodes
@@ -1000,7 +1036,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
  
  				// add the path to the drawing canvas
 				path = paper.path(pathDirections);  
-				path.attr({"stroke-width":5});
+				path.attr({"stroke-width":selectedStreamWidth});
 				path.attr({stroke:"#FF4D4D"});  
 
 				// use the start and end points of the stream's path for the node's XY coordinates. 
@@ -1090,13 +1126,21 @@ var mouseUpY;
 
 var alertClosed = true
 
-var shouldDisplayAlerts = false;
-var displayAlertsInConsole = true;
+var shouldDisplayAlerts = false
+var displayAlertsInConsole = true
+
+var damSize = 5
+var crossingSize = 3
+var selectedStreamWidth = 7 
+var deselectedStreamWidth = 5
+
+
 
 /** 
  * If two valid numbers are given, translates the specified the amount. 
  **/
 function translate(xChange, yChange){
+	console.log("in translate (x,y) " + xChange + "," + yChange)
 	// NaN: not a number
 	// NaN does not equal itself, so isNaN is needed to make sure there are 
 	// 2 valid numbers. 
@@ -1163,16 +1207,31 @@ function transformToDisplayArea(leftX, topY, rightX, bottomY){
  *         > 1 zoom in
  **/ 
 function zoom(factor){ 
-
+	console.log("\n\nzooming by " + factor)
 	if(!isNaN(factor) && (scale + factor) >= 0){  
+		console.log("svgWidth:  " + svgWidth)
+		console.log("svgHeight: " + svgHeight)
+		console.log("scale: " + scale)
+		console.log("current width: " + (svgWidth * scale))
+		console.log("new width:     " + (svgWidth * (scale + factor)))
+		console.log("width change:  " + ((svgWidth * scale) - (svgWidth * (scale + factor))))
+		console.log("current height: " + (svgHeight * scale))
+		console.log("new height:     " + (svgHeight * (scale + factor)))
+		console.log("height change:  " + ((svgHeight * scale) - (svgHeight * (scale + factor)))) 
+
 		widthChange = (svgWidth * scale) - (svgWidth * (scale + factor)) 
 		heightChange = (svgHeight * scale) - (svgHeight * (scale + factor)) 
 
 		scale += factor
 		svgScale.setAttribute('transform', 'scale(' + scale + ')') 
 
-		translateX += widthChange//2
-		translateY += heightChange//2
+
+		console.log("original translateX: " + translateX)
+		translateX += widthChange/1.2//2
+		console.log("updated translateX: " + translateX)
+		console.log("original translateY: " + translateY)
+		translateY += heightChange/1.2//2
+		console.log("updated translateY: " + translateY)
 
 
 
@@ -1321,9 +1380,10 @@ function addMouseEvents(){
         // Action performed when mouse is moving
         var mouseMoveListener = function(event)
         {
+
         	// Do nothing unless dragging
         	if(mouseIsDown)
-        	{
+        	{ 
         		//tmpconsole.log("dragging");  
 
         		currentx = event.pageX ;
@@ -1336,16 +1396,28 @@ function addMouseEvents(){
 
         	    // if negative, zoomed out; if positive, zoomed in
         	    scaleDifference = scale - originalScale
+				
+				/*console.log("\n\nmouse drag")
+        		console.log("scaleDifference:  " + scaleDifference) 
+        		console.log("   originalScale: " + originalScale)
+        		console.log("   scale:         " + scale)
+        		console.log("xChange: " + xChange)
+        		console.log("yChange: " + yChange)
+        	    
 
         	    // zoomed out: more is displaying on screen, so translate by more
         	    if(scaleDifference < 0){
-        	    	scaleDifference = 0 - scaleDifference
+        			scaleDifference = 0 - (scaleDifference * 0.4)
         	    	xChange *= (1 + scaleDifference)
         	    	yChange *= (1 + scaleDifference)
-        	    } else {
+        	    } else if (scaleDifference > 0) {
+        	    	scaleDifference = scaleDifference * 0.4
         	    	xChange *= (1 - scaleDifference)
         	    	yChange *= (1 - scaleDifference)
-        	    }
+        	    }  
+
+        	   	console.log("new xChange: " + xChange)
+        		console.log("new yChange: " + yChange)*/
 
         		//translate(xChange*xScale*0.5,yChange*yScale*0.5);
         		translate(xChange,yChange);
@@ -1376,6 +1448,7 @@ function addMouseEvents(){
 
         var mouseDragListener = function(event)
         {
+        	alert("drag!")
         	//tmpconsole.log("dragging");
         		var currentx = event.pageX;
         	    var currenty = event.pageY;
@@ -1387,6 +1460,25 @@ function addMouseEvents(){
       		    //tmpconsole.log("xScale  :" + xScale + " and yScale : " + yScale);
   
         	    //translate(xChange-w,yChange-h);
+        	    if(scale == originalScale){
+        	    	scaleChange = 1
+        	    } else {
+        	    	scaleChange = (scale - originalScale)
+        		}
+
+        		console.log("\n\nmouse drag")
+        		console.log("scaleChange: " + scaleChange)
+        		console.log("   originalScale: " + originalScale)
+        		console.log("   scale:         " + scale)
+        		console.log("xChange: " + xChange)
+        		console.log("yChange: " + yChange)
+
+        	    xChange = xChange/scaleChange
+        	    yChange = yChange/scaleChange
+
+        	    console.log("new xChange: " + xChange)
+        		console.log("new yChange: " + yChange)
+
         	    translate(xChange,yChange);
 
         	    mouseDownX = currentx;
@@ -1414,6 +1506,11 @@ function addKeyPressEvents(){
 		/* since we are using jquery, the event is already normalize */
 		var arrowKeys = {"left": 37, "up": 38, "right": 39, "down": 40, "plus": 187, "minus": 189};
 		var irrelevantKey = false
+		
+		if ((event.ctrlKey||event.metaKey)){
+			return
+		}
+		
 		if(event.keyCode == arrowKeys["left"]) {
 		translate(10, 0)
 		}
@@ -1552,13 +1649,14 @@ function main(){
 
 	// initializes budget value. 
 	slider.value = 0;
-	slider.max = 500;
+	slider.max = 10000;
 	dataManager.budget = slider.value;
 
 	// change the source file for the data
-	// $.get("BarrierAndStreamInfoOpt.json", function(data){  
+	 $.get("BarrierAndStreamInfoOpt.json", function(data){  
 	// $.get("BarrierAndStreamInfoOptFlipped.json", function(data){  
-	 $.get("BarrierAndStreamInfoOptScriptUpdated.json", function(data){     
+	// $.get("BarrierAndStreamInfoOptScriptUpdated.json", function(data){     
+	// $.get("BarrierAndStreamInfoSmallerDivisor.json", function(data){ 
  	//$.get("BarrierAndStreamInfoOpt50.json", function(data){ 
 	//$.get("BarrierAndStreamInfoOptReduced.json", function(data){ 
 	//$.get("BarrierAndStreamInfoOptNetworkReduced2.json", function(data){  

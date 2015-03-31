@@ -1171,8 +1171,8 @@ function translate(xChange, yChange){
 		//svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')')  
 		//console.log("new translate x,y: " + translateX + ", " + translateY)  
 
-		networkCenter[0] += xChange/scale
-		networkCenter[1] += yChange/scale
+		networkCenter[0] -= xChange/scale
+		networkCenter[1] -= yChange/scale
 
 		resetTranslation(false)
 	};
@@ -1180,17 +1180,18 @@ function translate(xChange, yChange){
 
 function resetTranslation(print){ 
 
-	newTranslation = recalculateTranslation(print)
+	newTopLeft = recalculateNetworkTopLeft(print)
 
-	translateX = newTranslation[0] 
-	translateY = newTranslation[1]	 
+
+	translateX = -newTopLeft[0] 
+	translateY = -newTopLeft[1]	 
 
 	console.log("new translate x,y: " + translateX + ", " + translateY) 
 	
 	svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')')  
 }
 
-function recalculateTranslation(print){
+function recalculateNetworkTopLeft(print){
 
 	//networkWidth = svgWidth/scale
 	//networkHeight = svgHeight/scale 
@@ -1204,20 +1205,20 @@ function recalculateTranslation(print){
 		      "\n       network c width: " + (networkWidth - networkWidth*scaleDifference) + 
 			  "\n       network c height: " + (networkHeight - networkHeight*scaleDifference)) 
 
-	networkCWidth = networkWidth + networkWidth*scaleDifference
-	networkCHeight = networkHeight + networkHeight*scaleDifference
+	//networkCWidth = networkWidth + networkWidth*scaleDifference
+	//networkCHeight = networkHeight + networkHeight*scaleDifference
 
-	console.log("   using networkD + networkD*scaleDifference * " + 
+	console.log("   using networkD + networkD*scaleDifference " +   
 		      "\n     (" + networkWidth + " + " + (networkWidth*scaleDifference) + ")" + 
 		      "\n     (" + networkHeight + " + " + (networkHeight*scaleDifference) + ")" + 
 		      "\n       network c width: " + (networkWidth + networkWidth*scaleDifference) + 
 			  "\n       network c height: " + (networkHeight + networkHeight*scaleDifference)) 
 
 	// translate is smaller than it should be? network jumps to bottom left
-	//networkCWidth = svgWidth/scale 
-	//networkCHeight = svgHeight/scale
+	networkCWidth = svgWidth/scale 
+	networkCHeight = svgHeight/scale
 
-	console.log("   using svgD/scale" +  
+	console.log("   using svgD/scale * " +  
 		      "\n       network c width: " + (svgWidth/scale) + 
 			  "\n       network c height: " + (svgHeight/scale)) 
 
@@ -1323,6 +1324,74 @@ function transformToDisplayArea(leftX, topY, rightX, bottomY){
 		"\n  displayedWidth: " + displayedWidth + "\n  displayedHeight: " + displayedHeight + "\n") 
 	
 
+	//networkCenter = [leftX + networkWidth/2, topY + networkHeight/2]
+
+	//console.log("  network center before centering: " + networkCenter[0] + 
+	//	      "\n                   " + networkCenter[1]) 
+ 
+ 	// whichever dimension has the unused ratio is currently uncentered: center it
+ 	//if (heightRatio < widthRatio){
+	//	networkCenter[0] += (networkWidth - displayedWidth)/2
+	//} else {
+	//	networkCenter[1] += (networkHeight - displayedHeight)/2 
+	//} 
+
+	//console.log("  network center after centering: " + networkCenter[0] + 
+	//	      "\n                   " + networkCenter[1]) 
+
+	//origin = paper.circle(0,0,20)
+	//originalCenter = paper.circle(networkCenter[0],networkCenter[1],20)
+	//beginningTransform = recalculateNetworkTopLeft(false)
+	//originalTranslate = paper.circle(beginningTransform[0],beginningTransform[1],20)
+	//originalCenter = paper.circle(3735,1405,20) 
+	//originalTranslate = paper.circle(1129,0,20)
+
+	//origin.attr({fill: "#9900CC"/*, stroke:"transparent","opacity":".90"*/}) 				// magenta
+	//originalCenter.attr({fill: "#FF0000"/*, stroke:"transparent","opacity":".90"*/}) 		// red
+	//originalTranslate.attr({fill: "#99CCFF"/*, stroke:"transparent","opacity":".90"*/}) 	// light blue
+
+	networkCenter = [(leftX+rightX)/2, (topY+bottomY)/2]
+
+	console.log("  network center: " + networkCenter[0] + 
+		      "\n                  " + networkCenter[1])  
+
+	console.log("calling reset translate to update translation. (leaving transformToDisplayArea)")
+	resetTranslation(true) 
+
+}
+
+function transformToDisplayAreaOriginal(leftX, topY, rightX, bottomY){
+	
+	console.log("transforming to display area. ") 
+
+	displayedWidth = rightX - leftX
+	displayedHeight = bottomY - topY
+
+
+
+	widthRatio = svgWidth/displayedWidth
+	heightRatio = svgHeight/displayedHeight 
+
+	if (heightRatio < widthRatio){
+		ratio = heightRatio
+	} else {
+		ratio = widthRatio
+	} 
+
+	svgScale.setAttribute('transform', 'scale(' + ratio + ')') 
+	scale = ratio
+	originalScale = ratio
+	scaleDifference = 0
+
+	networkWidth = svgWidth/scale//rightX - leftX;
+	networkHeight = svgHeight/scale//bottomY - topY;
+
+	console.log("  svgWidth: " + svgWidth + "\n  svgHeight: " + svgHeight)
+
+	console.log("\n  network width: " + networkWidth + "\n  networkHeight: " + networkHeight + 
+		"\n  displayedWidth: " + displayedWidth + "\n  displayedHeight: " + displayedHeight + "\n") 
+	
+
 	networkCenter = [leftX + networkWidth/2, topY + networkHeight/2]
 
 	console.log("  network center before centering: " + networkCenter[0] + 
@@ -1340,7 +1409,7 @@ function transformToDisplayArea(leftX, topY, rightX, bottomY){
 
 	//origin = paper.circle(0,0,20)
 	//originalCenter = paper.circle(networkCenter[0],networkCenter[1],20)
-	//beginningTransform = recalculateTranslation(false)
+	//beginningTransform = recalculateNetworkTopLeft(false)
 	//originalTranslate = paper.circle(beginningTransform[0],beginningTransform[1],20)
 	//originalCenter = paper.circle(3735,1405,20) 
 	//originalTranslate = paper.circle(1129,0,20)
@@ -1732,7 +1801,7 @@ function initDisplaySettings(){
 function initTransformElements(){  
 	origin = paper.circle(0,0,20) 
 	//originalCenter = paper.circle(networkCenter[0],networkCenter[1],20)
-	//beginningTransform = recalculateTranslation(false)
+	//beginningTransform = recalculateNetworkTopLeft(false)
 	//originalTranslate = paper.circle(beginningTransform[0],beginningTransform[1],20)
 	originalCenter = paper.circle(3735,1405,20) 
 	dimensionOver2 = paper.circle(2602,1405,20)  // width/2 or 3735-1129

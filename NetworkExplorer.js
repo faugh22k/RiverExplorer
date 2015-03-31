@@ -191,14 +191,18 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			}
 			output += "passability: " + this.passability.toFixed(3) + "<br>";  
 			if(this.currentAction != -1){
-				output += "\naction taken: " + this.currentAction + "<br>"; 
+				output += "action taken: " + this.currentAction + "<br>"; 
 				output += "improved passability: " + this.improvedPassability.toFixed(3) + "<br>";   
 			}
 		}
 		
 		if (this.children[2] != undefined && this.children[2][0] != undefined){
-			output += "\n\naccessibility going out: " + this.children[2][0].toFixed(3) + "<br>"; 
+			output += "accessibility going out: " + this.children[2][0].toFixed(3) + "<br>"; 
 		} 
+
+		output += "x: " + this.x + "<br>"
+		output += "y: " + this.y + "<br>"
+
 		return output;
 	},
 
@@ -213,7 +217,8 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		if (this.children[2][index] != undefined) { 
 			output += "accessibility: " + this.children[2][index].toFixed(3) + "<br>"; 
 		} else {
-			console.log("accessibility of stream segment " + index + " of " + this.id + " is undefined upon report generation. \n\n " + this.toString())
+			console.log("accessibility of stream segment " + index + " of " + this.id + 
+				" is undefined upon report generation. \n\n " + this.toString())
 		}
 
 		return output;
@@ -399,7 +404,8 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 				// add the habitat of the child
 				habitat += this.children[0][index].calculateHabitat(isOriginal);
 			} else {
-				ourAlert("for some reason, an entry in children[0]" + index.toString() + " is null in calculateHabitat. \n\n" + this.toString())
+				ourAlert("for some reason, an entry in children[0]" + index.toString() + 
+					" is null in calculateHabitat. \n\n" + this.toString())
 			}
 		}
 
@@ -434,7 +440,9 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			compare = true
 		}
 
-		//ourAlert("calculating accessibility. \ncomingIn = " + comingIn + "\npassability = " + this.passability + "\nimprovedPassability = " + this.improvedPassability + "\n\ngoing out should be: " + (comingIn*this.improvedPassability));
+		//ourAlert("calculating accessibility. \ncomingIn = " + comingIn + "\npassability = " + 
+			//this.passability + "\nimprovedPassability = " + this.improvedPassability + 
+			//"\n\ngoing out should be: " + (comingIn*this.improvedPassability));
 		if(this.isBarrier){
 
 			//accessibility = comingIn * (this.passability + this.passabilityImprovement);
@@ -476,7 +484,9 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			compare = true
 		}
 
-		//ourAlert("calculating accessibility. \ncomingIn = " + comingIn + "\npassability = " + this.passability + "\nimprovedPassability = " + this.improvedPassability + "\n\ngoing out should be: " + (comingIn*this.improvedPassability));
+		//ourAlert("calculating accessibility. \ncomingIn = " + comingIn + "\npassability = " + this.passability + 
+			//"\nimprovedPassability = " + this.improvedPassability + "\n\ngoing out should be: " + 
+			//(comingIn*this.improvedPassability));
 		if(this.isBarrier){
 
 			//accessibility = comingIn * (this.passability + this.passabilityImprovement);
@@ -703,7 +713,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			cost = Number(entry["cost"]) 
 			//ourAlert("cost = \'" + cost + "\'\nentry['cost'] = \'" + entry["cost"] + "\'")
 			//if (!isNaN(cost) && (closestCost == null || ((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
-			if (!isNaN(cost) && ((closestCost == null && cost <= dataManager.budget) || ((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
+			if (!isNaN(cost) && ((closestCost == null && cost <= dataManager.budget) || 
+				((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
 				closestEntry = entry
 				closestCost = cost
 				//ourAlert(closestCost + " cost is closer to our budget")
@@ -1107,16 +1118,25 @@ var back;
 
 var svgWidth;
 var svgHeight;
+var displayedWidth;
+var displayedHeight;
 
 var viewBox;
 var originalXRatio; 
 var originalYRatio; 
+var originalScale;
+var differenceInScale;
 var viewRectangle;
 var colors;
 var translateX;
 var translateY;
 var scale;
+var scaleDifference;
 var originalScale;
+
+var networkCenter;
+var networkWidth;
+var networkHeight;
 
 var mouseIsDown = false;
 var mouseDownX;
@@ -1145,11 +1165,111 @@ function translate(xChange, yChange){
 	// NaN does not equal itself, so isNaN is needed to make sure there are 
 	// 2 valid numbers. 
 	if (!isNaN(xChange) && !isNaN(yChange)) {  
-		translateX += xChange
-		translateY += yChange 
+		//translateX += xChange
+		//translateY += yChange 
 
-		svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')')    
+		//svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')')  
+		//console.log("new translate x,y: " + translateX + ", " + translateY)  
+
+		networkCenter[0] += xChange/scale
+		networkCenter[1] += yChange/scale
+
+		resetTranslation(false)
 	};
+}
+
+function resetTranslation(print){ 
+
+	newTranslation = recalculateTranslation(print)
+
+	translateX = newTranslation[0] 
+	translateY = newTranslation[1]	 
+
+	console.log("new translate x,y: " + translateX + ", " + translateY) 
+	
+	svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')')  
+}
+
+function recalculateTranslation(print){
+
+	//networkWidth = svgWidth/scale
+	//networkHeight = svgHeight/scale 
+
+	networkCWidth = networkWidth - networkWidth*scaleDifference
+	networkCHeight = networkHeight - networkHeight*scaleDifference
+
+	console.log("   using networkD - networkD*scaleDifference " + 
+		      "\n     (" + networkWidth + " - " + (networkWidth*scaleDifference) + ")" + 
+		      "\n     (" + networkHeight + " - " + (networkHeight*scaleDifference) + ")" + 
+		      "\n       network c width: " + (networkWidth - networkWidth*scaleDifference) + 
+			  "\n       network c height: " + (networkHeight - networkHeight*scaleDifference)) 
+
+	networkCWidth = networkWidth + networkWidth*scaleDifference
+	networkCHeight = networkHeight + networkHeight*scaleDifference
+
+	console.log("   using networkD + networkD*scaleDifference * " + 
+		      "\n     (" + networkWidth + " + " + (networkWidth*scaleDifference) + ")" + 
+		      "\n     (" + networkHeight + " + " + (networkHeight*scaleDifference) + ")" + 
+		      "\n       network c width: " + (networkWidth + networkWidth*scaleDifference) + 
+			  "\n       network c height: " + (networkHeight + networkHeight*scaleDifference)) 
+
+	// translate is smaller than it should be? network jumps to bottom left
+	//networkCWidth = svgWidth/scale 
+	//networkCHeight = svgHeight/scale
+
+	console.log("   using svgD/scale" +  
+		      "\n       network c width: " + (svgWidth/scale) + 
+			  "\n       network c height: " + (svgHeight/scale)) 
+
+	// zooms from top left
+	//networkCWidth = networkWidth
+	//networkCHeight = networkHeight
+	//
+	//console.log("   using networkD" +  
+	//	      "\n       network c width: " + networkWidth + 
+	//		  "\n       network c height: " + networkHeight) 
+
+	// width   scaleDifference    	width-width*sD		scaleDifference		width*sD
+	// 1000          0            		1000  			      1 			  1000
+	// 1000          0.1          		 900		        1.1 			  1100
+	// 1000         -0.1          		1100	            0.9 			   900
+
+	if (print) { 
+		console.log("\nrecalulating translation")
+		console.log("   previous translation: " + 
+			      "\n     translateX: " + translateX + 
+			      "\n     translateY: " + translateY + "\n")
+		console.log("   scale: " + scale)
+		console.log("   scale difference: " + scaleDifference + "\n")     
+		console.log("   network center: " + networkCenter[0] + 
+		          "\n                   " + networkCenter[1])  
+		console.log("     network width: " + networkWidth + 
+			      "\n     network height: " + networkHeight)
+		console.log("     network c width: " + networkCWidth + 
+			      "\n     network c height: " + networkCHeight) 
+	}
+	
+
+ 	 
+	//scaledCenter = [networkCenter[0]*scale, networkCenter[1]*scale]
+
+	//console.log("   scaled center: " + scaledCenter)
+
+	// need to know network width to figure out new top left x,y for translating
+	networkTopLeft = [networkCenter[0] - networkCWidth/2, networkCenter[1] - networkCHeight/2]
+
+	if(print){
+		console.log("   distance to txy: " + 
+			      "\n        x: " + (networkCWidth/2) + 
+			      "\n        y: " + (networkCHeight/2)) 
+	}
+
+	console.log("   network top left: " + networkTopLeft[0] + 
+		      "\n                     " + networkTopLeft[1])
+	console.log("   network center: " + networkCenter[0] + 
+		      "\n                   " + networkCenter[1]) 
+
+	return networkTopLeft 
 }
 
  
@@ -1172,73 +1292,84 @@ function zoomOut()
 }
 
 function transformToDisplayArea(leftX, topY, rightX, bottomY){
-	displayedWidth = rightX - leftX;
-	displayedHeight = bottomY - topY;
+	
+	console.log("transforming to display area. ") 
+
+	displayedWidth = rightX - leftX
+	displayedHeight = bottomY - topY
 
 
 
 	widthRatio = svgWidth/displayedWidth
-	heightRatio = svgHeight/displayedHeight
-	//ratio = (widthRatio + heightRatio)/2
+	heightRatio = svgHeight/displayedHeight 
 
 	if (heightRatio < widthRatio){
 		ratio = heightRatio
 	} else {
 		ratio = widthRatio
-	}
+	} 
 
 	svgScale.setAttribute('transform', 'scale(' + ratio + ')') 
 	scale = ratio
 	originalScale = ratio
+	scaleDifference = 0
 
-	xChange = leftX - translateX
-	yChange = topY - translateY
+	networkWidth = svgWidth/scale//rightX - leftX;
+	networkHeight = svgHeight/scale//bottomY - topY;
 
-	translateX += xChange
-	translateY += yChange 
+	console.log("  svgWidth: " + svgWidth + "\n  svgHeight: " + svgHeight)
 
-	svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')') 
+	console.log("\n  network width: " + networkWidth + "\n  networkHeight: " + networkHeight + 
+		"\n  displayedWidth: " + displayedWidth + "\n  displayedHeight: " + displayedHeight + "\n") 
+	
+
+	networkCenter = [leftX + networkWidth/2, topY + networkHeight/2]
+
+	console.log("  network center before centering: " + networkCenter[0] + 
+		      "\n                   " + networkCenter[1]) 
+ 
+ 	// whichever dimension has the unused ratio is currently uncentered: center it
+ 	if (heightRatio < widthRatio){
+		networkCenter[0] += (networkWidth - displayedWidth)/2
+	} else {
+		networkCenter[1] += (networkHeight - displayedHeight)/2 
+	} 
+
+	console.log("  network center after centering: " + networkCenter[0] + 
+		      "\n                   " + networkCenter[1]) 
+
+	//origin = paper.circle(0,0,20)
+	//originalCenter = paper.circle(networkCenter[0],networkCenter[1],20)
+	//beginningTransform = recalculateTranslation(false)
+	//originalTranslate = paper.circle(beginningTransform[0],beginningTransform[1],20)
+	//originalCenter = paper.circle(3735,1405,20) 
+	//originalTranslate = paper.circle(1129,0,20)
+
+	//origin.attr({fill: "#9900CC"/*, stroke:"transparent","opacity":".90"*/}) 				// magenta
+	//originalCenter.attr({fill: "#FF0000"/*, stroke:"transparent","opacity":".90"*/}) 		// red
+	//originalTranslate.attr({fill: "#99CCFF"/*, stroke:"transparent","opacity":".90"*/}) 	// light blue
+
+
+	console.log("calling reset translate to update translation. (leaving transformToDisplayArea)")
+	resetTranslation(true) 
 
 }
 
-/**
- * Zooms by factor, if factor is a valid number. Suggested (but not required) range 0.6-1.4
- * numbers < 1 zoom out
- *         > 1 zoom in
- **/ 
 function zoom(factor){ 
 	console.log("\n\nzooming by " + factor)
-	if(!isNaN(factor) && (scale + factor) >= 0){  
-		console.log("svgWidth:  " + svgWidth)
-		console.log("svgHeight: " + svgHeight)
-		console.log("scale: " + scale)
-		console.log("current width: " + (svgWidth * scale))
-		console.log("new width:     " + (svgWidth * (scale + factor)))
-		console.log("width change:  " + ((svgWidth * scale) - (svgWidth * (scale + factor))))
-		console.log("current height: " + (svgHeight * scale))
-		console.log("new height:     " + (svgHeight * (scale + factor)))
-		console.log("height change:  " + ((svgHeight * scale) - (svgHeight * (scale + factor)))) 
-
-		widthChange = (svgWidth * scale) - (svgWidth * (scale + factor)) 
-		heightChange = (svgHeight * scale) - (svgHeight * (scale + factor)) 
-
-		scale += factor
-		svgScale.setAttribute('transform', 'scale(' + scale + ')') 
-
-
-		console.log("original translateX: " + translateX)
-		translateX += widthChange/1.2//2
-		console.log("updated translateX: " + translateX)
-		console.log("original translateY: " + translateY)
-		translateY += heightChange/1.2//2
-		console.log("updated translateY: " + translateY)
-
-
-
-		svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')') 
+	console.log("current scale " + scale)
+	if(!isNaN(factor) && (scale + factor) >= 0){    
+		 
+		scale += factor 
+		scaleDifference += factor
+		
+		svgScale.setAttribute('transform', 'scale(' + scale + ')')   
+		//svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')')  
+		resetTranslation(true)
 	}
 }
 
+ 
 /**
  * Updates Raphael/SVG's viewbox properties to shift the visible portion of the canvas.
  **/
@@ -1395,7 +1526,7 @@ function addMouseEvents(){
         	    mouseDownY = currenty;
 
         	    // if negative, zoomed out; if positive, zoomed in
-        	    scaleDifference = scale - originalScale
+        	    //scaleDifference = scale - originalScale
 				
 				/*console.log("\n\nmouse drag")
         		console.log("scaleDifference:  " + scaleDifference) 
@@ -1528,7 +1659,17 @@ function addKeyPressEvents(){
 		} 
 		else if(event.keyCode == arrowKeys["minus"]){
 			zoom(-0.1)
+		} else if (event.keyCode == 84){   
+			// t
+			testNetwork = [500, 300]
+			testScaled = convertToScaledCoordinates(testNetwork)
+			testReciprocal = convertToNetworkCoordinates(testScaled) 
+
+			console.log("made up network coodinates: " + testNetwork + "\n" + 
+				        "converted to scaled: " + testScaled + "\n" + 
+				        "test change back: " + testReciprocal)
 		} else {
+			console.log("irrelevantKey: " + event.keyCode)
 			irrelevantKey = true
 		}
 	
@@ -1589,14 +1730,51 @@ function initDisplaySettings(){
 
 
 function initTransformElements(){  
+	origin = paper.circle(0,0,20) 
+	//originalCenter = paper.circle(networkCenter[0],networkCenter[1],20)
+	//beginningTransform = recalculateTranslation(false)
+	//originalTranslate = paper.circle(beginningTransform[0],beginningTransform[1],20)
+	originalCenter = paper.circle(3735,1405,20) 
+	dimensionOver2 = paper.circle(2602,1405,20)  // width/2 or 3735-1129
+	dimensionOver22 = paper.circle(1477,1405,20) // 3734-1129-1129 
+	dimensionOver222 = paper.circle(348,1405,20) // 3735-1129-1129-1129 
+	originalTranslate = paper.circle(-1129,0,20)
 
+	origin.attr({fill: "#9900CC"/*, stroke:"transparent","opacity":".90"*/}) 				// magenta 
+	originalCenter.attr({fill: "#FF0000"/*, stroke:"transparent","opacity":".90"*/}) 		// red
+	dimensionOver2.attr({fill: "#99FF66"/*, stroke:"transparent","opacity":".90"*/}) 		// green
+	dimensionOver22.attr({fill: "#33CC33"/*, stroke:"transparent","opacity":".90"*/}) 		// darker green
+	dimensionOver222.attr({fill: "#005200"/*, stroke:"transparent","opacity":".90"*/}) 		// even darker green 
+	originalTranslate.attr({fill: "#99CCFF"/*, stroke:"transparent","opacity":".90"*/}) 	// light blue
+	
+	originalCenter.hover(function(){
+					alert("3735, 1405")  
+				}, function(){});
+	dimensionOver2.hover(function(){
+					alert("2602, 1405")  
+				}, function(){});
+	dimensionOver22.hover(function(){
+					alert("1477, 1405")  
+				}, function(){});
+	dimensionOver222.hover(function(){
+					alert("348, 1405")  
+				}, function(){});
+	originalTranslate.hover(function(){
+					alert("-1129, 0")  
+				}, function(){});
+	origin.hover(function(){
+					alert("0, 0")  
+				}, function(){}); 
+
+	/*
+	// translate on outside
 	translateX = 0
 	translateY = 0   
 	scale = 1
 
 	svgPan = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
 	svgPan.setAttribute('transform', 'translate(0,0)');  
-	svgPan.setAttribute('transform', 'translate(20,20)');   
+	//svgPan.setAttribute('transform', 'translate(20,20)');   
 
 	svgScale = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
 	svgScale.setAttribute('transform', 'scale(1)');  
@@ -1606,17 +1784,50 @@ function initTransformElements(){
 
 	$(svgComponent).wrapInner(svgPan)
 
-	svgPan.setAttribute('transform', 'translate(40,40)');   
+	//svgPan.setAttribute('transform', 'translate(40,40)');   
 
 	var wrapper = svgComponent.childNodes[0]
 
-	wrapper.setAttribute('transform', 'translate(40,40)');  
+	//wrapper.setAttribute('transform', 'translate(40,40)');  
 
 	// $(svgPan).wrapInner(svgScale) does not work
 	$(wrapper).wrapInner(svgScale) 
 
 	svgPan = wrapper
 	svgScale = wrapper.childNodes[0]
+	*/
+
+
+	
+	  // dan thinks zoom needs to be on the inside? seems like I wrote this comment backwards??
+	  // zoom on outside
+	translateX = 0
+	translateY = 0   
+	scale = 1
+
+	svgPan = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
+	svgPan.setAttribute('transform', 'translate(0,0)');  
+	//svgPan.setAttribute('transform', 'translate(20,20)');   
+
+	svgScale = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
+	svgScale.setAttribute('transform', 'scale(1)');  
+	
+	var svgComponents = canvas.childNodes
+	var svgComponent = svgComponents[0] 
+
+	$(svgComponent).wrapInner(svgScale)
+
+	svgScale.setAttribute('transform', 'translate(40,40)');   
+
+	var wrapper = svgComponent.childNodes[0]
+
+	wrapper.setAttribute('transform', 'translate(40,40)');  
+
+	// $(svgScale).wrapInner(svgScale) does not work
+	$(wrapper).wrapInner(svgPan) 
+
+	svgScale = wrapper
+	svgPan = wrapper.childNodes[0] 
 }
 
 

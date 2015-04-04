@@ -70,8 +70,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	 * Set the raphael node drawing object. 
 	 **/
 	Node.prototype.setDrawingNode = function (drawing){ 
-		this.nodeDrawing = drawing;
-		//this.nodeDrawing.attr({r:20}); 
+		this.nodeDrawing = drawing; 
 		pairedNode = this;
 		this.needsNodeDrawing = false
 		this.nodeDrawing.click(function(){ 
@@ -135,9 +134,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		else { 
 
 			this.improvedPassability = this.possibleActions[action].improvedPassability 
-			this.currentAction = action
-			// *** redundent coloring? color used for debugging? 2015 commentted out
-			//this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".90"})  
+			this.currentAction = action 
 		} 
 
 		// mark node as needing repaint if the passability has changed
@@ -198,10 +195,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		
 		if (this.children[2] != undefined && this.children[2][0] != undefined){
 			output += "accessibility going out: " + this.children[2][0].toFixed(3) + "<br>"; 
-		} 
-
-		output += "x: " + this.x + "<br>"
-		output += "y: " + this.y + "<br>"
+		}  
 
 		return output;
 	},
@@ -230,9 +224,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	Node.prototype.setSelection = function (selected){
 		if (this.selected != selected){
 			this.requireRepaint = true
-			this.selected = selected
-			//this.nodeDrawing.attr({fill: "#FFFF66", stroke:"transparent","opacity":".85"});
-
+			this.selected = selected  
 		}
 	},
 
@@ -248,6 +240,10 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		}
 	},
 
+	/**
+	 * Returns the current display radius for the node based 
+	 * on barrier type and current action status
+	 **/
 	Node.prototype.getNodeRadius = function(){
 		if(this.currentAction == -1){
 			if (!this.isBarrier || this.barrierType == 1){
@@ -295,7 +291,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		crossingNoAction = "#FFFF66"	// yellow			"#087e7d"
 		damNoAction = "#FF6E2C"			// orange			"#78c44c"
 		crossingAction = "#78c44c"		// green		//"#087e7d"		// turquoise		"#FFFF66"
-		damAction = "#8D198D"//"#9966FF" 			// purple"		//"#78c44c"			// green			"#FFFF66"
+		damAction = "#8D198D"			// purple		//"#9966FF" 	// purple"		//"#78c44c"			// green			"#FFFF66"
 
 		nodeSize = this.getNodeRadius()
 
@@ -413,63 +409,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			this.originalHabitat = habitat
 		this.currentHabitat = habitat;
 		return habitat;
-	},
-
-	/**
-	 * Calculate the accessibility of the node's child segments 
-	 * by multiplying initial accessibility (comingIN) by the 
-	 * passability. Then call itself for the node's descendants.  
-	 **/ 
-	Node.prototype.calculateAccessibilityNewVersion = function(comingIn){
-		/*
-		this.accessibilityFromRoot;
-		this.accessibilityLeaving;
-		this.improvedAccessibilityFromRoot;
-		this.improvedAccessibilityLeaving; 
-		*/
-
-		this.accessibilityFromRoot = comingIn
-		this.accessibilityLeaving = coming * this.passability
-		this.improvedAccessibilityFromRoot = this.accessibilityFromRoot
-		this.improvedAccessibilityLeaving = this.accessibilityLeaving 
-
-		originalAccessibility = -1
-		compare = false
-		if (this.children != null && this.children[2][0] != null){
-			originalAccessibility = this.children[2][0]
-			compare = true
-		}
-
-		//ourAlert("calculating accessibility. \ncomingIn = " + comingIn + "\npassability = " + 
-			//this.passability + "\nimprovedPassability = " + this.improvedPassability + 
-			//"\n\ngoing out should be: " + (comingIn*this.improvedPassability));
-		if(this.isBarrier){
-
-			//accessibility = comingIn * (this.passability + this.passabilityImprovement);
-			accessibility = comingIn * this.improvedPassability; 
-			
-			// 2015 this is debug coloring right?
-			//colorString = this.getColor(accessibility)
-			//this.nodeDrawing.attr({fill: "#FF4500", stroke:"transparent","opacity":".55"}); 
-			//this.nodeDrawing.attr({fill: "#1e90ff", stroke:"transparent","opacity":".55"}); 
-		} else { 
-			accessibility = comingIn;
-		} 
-
-		// if the node has children, it will need to be repainted 
-		// if the accessibility has changed
-		if (compare && originalAccessibility != accessibility){
-			this.requireRepaint = true
-		}
-
-		// 2015 do these loops need to be separate? 
-		for (index in this.children[0]){
-			this.children[2][index] = accessibility;    
-		}
-		for (index in this.children[0]){ 
-			this.children[0][index].calculateAccessibility(this.children[2][index]);   
-		}
-	},
+	}, 
 
 	/**
 	 * Calculate the accessibility of the node's child segments 
@@ -484,18 +424,8 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			compare = true
 		}
 
-		//ourAlert("calculating accessibility. \ncomingIn = " + comingIn + "\npassability = " + this.passability + 
-			//"\nimprovedPassability = " + this.improvedPassability + "\n\ngoing out should be: " + 
-			//(comingIn*this.improvedPassability));
-		if(this.isBarrier){
-
-			//accessibility = comingIn * (this.passability + this.passabilityImprovement);
-			accessibility = comingIn * this.improvedPassability; 
-			
-			// 2015 this is debug coloring right?
-			//colorString = this.getColor(accessibility)
-			//this.nodeDrawing.attr({fill: "#FF4500", stroke:"transparent","opacity":".55"}); 
-			//this.nodeDrawing.attr({fill: "#1e90ff", stroke:"transparent","opacity":".55"}); 
+		if(this.isBarrier){ 
+			accessibility = comingIn * this.improvedPassability;  
 		} else { 
 			accessibility = comingIn;
 		} 
@@ -506,7 +436,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			this.requireRepaint = true
 		}
 
-		// 2015 do these loops need to be separate? 
+		// these loops need to be separate
 		for (index in this.children[0]){
 			this.children[2][index] = accessibility;    
 		}
@@ -547,8 +477,6 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	 **/ 
 	DataManager.prototype.updateSelected = function (calledFrom){ 
 		ourAlert("in updateSelected. calledFrom \n" + calledFrom.toString());  
-		//dataManager.markAllSelected(calledFrom); 
-		// the root of the network containing calledFrom is returned 
 		
 		// deselect all of the network
 		for (index in dataManager.networkSource){
@@ -696,31 +624,23 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		closestEntry = null
 		closestCost = null
 		desiredID = dataManager.selectedNode.id
-		entriesForNode = dataManager.OPT[desiredID]
-		
-		/*ourAlert("starting node: " +  dataManager.selectedNode.toString() + "\n\nentries for node: \n" + entriesForNode)
-
-		if (desiredID.toString() in dataManager.OPT) {
-			ourAlert("should have an entry! " + desiredID + " is in OPT!")
-		} else {
-			ourAlert(desiredID + " doesn't seem to be in OPT.")
-		}*/
+		entriesForNode = dataManager.OPT[desiredID] 
 
 		ourAlert("our budget is " + dataManager.budget + " and we're starting from node " + desiredID)
 		foundAnEntry = false
+		
 		for (key in entriesForNode) {
 			entry = entriesForNode[key]
 			cost = Number(entry["cost"]) 
-			//ourAlert("cost = \'" + cost + "\'\nentry['cost'] = \'" + entry["cost"] + "\'")
-			//if (!isNaN(cost) && (closestCost == null || ((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
+			
 			if (!isNaN(cost) && ((closestCost == null && cost <= dataManager.budget) || 
 				((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
 				closestEntry = entry
-				closestCost = cost
-				//ourAlert(closestCost + " cost is closer to our budget")
+				closestCost = cost 
 				foundAnEntry = true
 			}
 		}
+
 		if (!foundAnEntry){
 			ourAlert("Did not find an entry for " + desiredID)
 			return null;
@@ -939,9 +859,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
    
 			numberNodes++;
 		} 
-
-		//console.log("barrier type counts: 0: " + barrierTypes["0"] + ", 1: " + barrierTypes["1"] + ", 2: " + barrierTypes["2"])
-   		ourAlert("barrier type counts: 0: " + barrierTypes["0"] + ", 1: " + barrierTypes["1"] + ", 2: " + barrierTypes["2"]) 
+   
+		ourAlert("barrier type counts: 0: " + barrierTypes["0"] + ", 1: " + barrierTypes["1"] + ", 2: " + barrierTypes["2"]) 
 
 		ourAlert("\nread in the nodes. (" + numberNodes.toString() + ")\n");  
 		return allNodes
@@ -1013,8 +932,9 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			} 
 		}
 		
-		console.log("missing: " + nodesMissingReport)
-		// tmp comment ourAlert("read in the stream segments");
+		if (nodesMissingReport != ""){
+			console.log("missing: " + nodesMissingReport) 
+		}
 		console.log("\nread in the stream segments.\n");
 		console.log(successes + " successful");
 		console.log("(encountered " + problems + " problems along the way)");
@@ -1025,14 +945,12 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	 * (calculations, deselection, and color setting) 
 	 **/ 
 	DataManager.prototype.initNetwork = function  (root){ 
-		root.addDrawingNodes(0, true); 
-		//ourAlert("node with " + root.passability.toString() + " passability\n" + root.toString()) 
+		root.addDrawingNodes(0, true);   
 		root.calculateAccessibility(1.0);
 		root.calculateHabitat(true);
 		this.deselect(root)
 		root.setColors();
-		root.nodeDrawing.attr({r:20/*, fill:"blue"*/});
-		//this.selectedNode = root;   
+		root.nodeDrawing.attr({r:20});  
 	}
 
 
@@ -1130,6 +1048,10 @@ function translate(xChange, yChange){
 	};
 }
 
+/**
+ * Updates the currents svg translation according to current
+ * scale and networkCenter 
+ **/
 function resetTranslation(){ 
 
 	newTopLeft = recalculateNetworkTopLeft()
@@ -1143,35 +1065,26 @@ function resetTranslation(){
 	svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')')  
 }
 
+/**
+ * Calculates the current network coordinate that should be located
+ * at the top left corner of the display area. (calculated from 
+ * current scale and networkCenter) 
+ **/
 function recalculateNetworkTopLeft(){ 
 
-	// translate is smaller than it should be? network jumps to bottom left
+	// calculate the current network width and height on display
 	networkWidth = svgWidth/scale 
 	networkHeight = svgHeight/scale  
 
-	// need to know network width to figure out new top left x,y for translating
+	// find the top left corner
 	networkTopLeft = [networkCenter[0] - networkWidth/2, networkCenter[1] - networkHeight/2] 
 
 	return networkTopLeft 
 }
 
- 
 /**
- * Zoom in slightly
- **/ 
-function zoomIn()
-{
-	zoom(1.15); 
-}
-
-/**
- * Zooms out slightly
- **/ 
-function zoomOut()
-{
-	zoom(0.85); 
-}
-
+ * Updates settings to center the given area in the display window
+ **/
 function transformToDisplayArea(leftX, topY, rightX, bottomY){ 
 
 	displayedWidth = rightX - leftX
@@ -1196,6 +1109,25 @@ function transformToDisplayArea(leftX, topY, rightX, bottomY){
 }
  
 
+/**
+ * Zoom in slightly
+ **/ 
+function zoomIn()
+{
+	zoom(1.15); 
+}
+
+/**
+ * Zooms out slightly
+ **/ 
+function zoomOut()
+{
+	zoom(0.85); 
+}
+
+/**
+ * Zoom by factor, update current display transformations
+ **/ 
 function zoom(factor){ 
 	console.log("\n\nzooming by " + factor)
 	console.log("current scale " + scale)
@@ -1220,9 +1152,7 @@ function initViewBox() {
 	paper.setViewBox(0 - viewBox[0], 0 - viewBox[1], w, h);     
 }
 
- 
-
-
+  
 /**
  * Responds a change in the budget slider (once user has stopped dragging the handle)
  **/
@@ -1274,7 +1204,7 @@ function ourAlert(text){
  
 
 /**
- * Add mouse events to the page (hover, drag, click)
+ * Add mouse events to the page (mouse down, mouse move, mouse up, mouse zoom)
  **/ 
 function addMouseEvents(){  
 
@@ -1354,16 +1284,18 @@ function addMouseEvents(){
 }
 
 /**
- * Add events to zoom in and out using - and + keys. 
+ * Add events to zoom in and out using - and + keys, and to pan using the arrow keys. 
  **/ 
 function addKeyPressEvents(){
 	$(document).keydown(function(event) {
 	
 
-		/* since we are using jquery, the event is already normalize */
+		/* since we are using jquery, the event is already normalized */
 		var arrowKeys = {"left": 37, "up": 38, "right": 39, "down": 40, "plus": 187, "minus": 189};
 		var irrelevantKey = false
 		
+		// if a command or control key is pressed, the default 
+		// event should occur. 
 		if ((event.ctrlKey||event.metaKey)){
 			return
 		}
@@ -1445,7 +1377,9 @@ function initDisplaySettings(){
 	initViewBox()  
 }
 
-
+/**
+ * Initializes the transfomation html elements and the transformation settings
+ **/
 function initTransformElements(){   
 
 	translateX = 0

@@ -870,8 +870,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		dams = info.actions.dams
 		crossings = info.actions.crossings 
  
- 	 	displayInfo = info.displayInfo 
- 	 	this.initDisplaySettings()  
+ 	 	displayInfo = info.displayInfo  
 
 		// read in all the nodes, create objects for them, and store them into a dictionary.  
 		allNodes = this.readInNodes(nodes) 
@@ -907,55 +906,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 		transformToDisplayArea(0,0, displayInfo.maxX, displayInfo.maxY)
 
 		ourAlert("setup complete!") 
-	},    
+	},   
 
-	/**
-	 * Creates the initial display dimension settings and refreshes the display.
-	 **/ 
-	DataManager.prototype.initDisplaySettings = function  (){ 
-		//ourAlert("maxX: " + displayInfo.maxX + "\nmaxY: " + displayInfo.maxY)
- 		
- 		/*if (displayInfo == null){
- 			displayInfo = {maxX: 100, maxY: 100};
- 		}
-
- 		console.log("maxX: " + displayInfo.maxX + "\nmaxY: " + displayInfo.maxY) 
-		viewBox[2] = displayInfo.maxX + 10
-		viewBox[3] = displayInfo.maxY + 10
-
-		screenWidth = canvas.offsetWidth
-		screenHeight = canvas.offsetHeight 
-
-		displayWidth = viewBox[2] - viewBox[0]
-		displayHeight = viewBox[3] - viewBox[1]
-
-		originalXRatio = screenWidth/displayWidth
-		originalYRatio = screenHeight/displayHeight 
-
-		refreshViewBox();   */
-
-		/*colorScaleFunction = chroma.interpolate.bezier(['#223535', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue'])  
-
-
-		browserWidth = $(window).width()
-		browserHeight = $(window).height()
-
-		width = browserWidth - 300 //752;//470;
-		height = browserHeight - 200 //470; 
-
-		alert("viewbox width, height: " + width + "\n" + height + "\n\n\nbrowser width, height: " + browserWidth + "\n" + browserHeight)
-
-		viewBox = [0, 0, displayInfo.maxX, displayInfo.maxY] 
- 
-		canvas = document.getElementById('canvas') 
-		paper = new Raphael(document.getElementById('canvas'), width, height);   
-
-    	// Setting preserveAspectRatio to 'none' lets you stretch the SVG
-		paper.canvas.setAttribute('preserveAspectRatio', 'none');
- 
-		refreshViewBox() 
-		addAllPageEvents()*/
-	},    
 
 	/**
 	 * Reads in all the nodes, creates objects for them, and stores them into a dictionary.  
@@ -1101,58 +1053,63 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
  **********************************************************************************************/
  
 var dataManager;
-var canvas;
-var svgPan;
-var svgScale;
-var context; 
-var budget;
-var slider; 
-var information;
-var summary;
-var paper;
-var set;
+
+var budget;   // current allocated budget   
+var slider;   // slider to change the budget  
+
+var information;   // html element to display node/stream information 
+var summary;       // html element to display overall summary information
+
+
 var circle;
 var width;
-var height;
-var back;
+var height; 
 
-var svgWidth;
-var svgHeight;
-var displayedWidth;
-var displayedHeight;
 
-var viewBox;
-var originalXRatio; 
-var originalYRatio; 
-var originalScale;
-var differenceInScale;
-var viewRectangle;
-var colors;
-var translateX;
-var translateY;
-var scale;
-var scaleDifference;
-var originalScale;
+// raphael variables
+var paper;      //  rapael canvas element 
+var viewBox;    //  used for initial paper dimensions 
+var canvas;     //  html area where the paper element is placed 
 
-var networkCenter;
-var networkWidth;
-var networkHeight;
-
+ 
+// used for panning in responce to mouse drag
 var mouseIsDown = false;
 var mouseDownX;
 var mouseDownY;
 var mouseUpX;
 var mouseUpY; 
 
-var alertClosed = true
+// current transformation settings  
+var translateX;
+var translateY;
+var scale;
 
-var shouldDisplayAlerts = false
-var displayAlertsInConsole = true
+// html elements to control scale and translate 
+var svgPan;
+var svgScale;
 
+// the width and height of the svg drawing area
+// used to determine current network width and height
+var svgWidth;
+var svgHeight; 
+
+// the network coordinates that are currently being 
+// displayed at the center of the screen 
+var networkCenter; 
+
+// color scale for accessibilities 
+var colors;
+
+// visual settings for barriers and streams
 var damSize = 5
 var crossingSize = 3
 var selectedStreamWidth = 7 
 var deselectedStreamWidth = 5
+
+// settings for how to display alerts
+var shouldDisplayAlerts = false
+var displayAlertsInConsole = true
+
 
 
 
@@ -1164,23 +1121,18 @@ function translate(xChange, yChange){
 	// NaN: not a number
 	// NaN does not equal itself, so isNaN is needed to make sure there are 
 	// 2 valid numbers. 
-	if (!isNaN(xChange) && !isNaN(yChange)) {  
-		//translateX += xChange
-		//translateY += yChange 
-
-		//svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')')  
-		//console.log("new translate x,y: " + translateX + ", " + translateY)  
+	if (!isNaN(xChange) && !isNaN(yChange)) {   
 
 		networkCenter[0] -= xChange/scale
 		networkCenter[1] -= yChange/scale
 
-		resetTranslation(false)
+		resetTranslation() 
 	};
 }
 
-function resetTranslation(print){ 
+function resetTranslation(){ 
 
-	newTopLeft = recalculateNetworkTopLeft(print)
+	newTopLeft = recalculateNetworkTopLeft()
 
 
 	translateX = -newTopLeft[0] 
@@ -1191,84 +1143,14 @@ function resetTranslation(print){
 	svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')')  
 }
 
-function recalculateNetworkTopLeft(print){
-
-	//networkWidth = svgWidth/scale
-	//networkHeight = svgHeight/scale 
-
-	networkCWidth = networkWidth - networkWidth*scaleDifference
-	networkCHeight = networkHeight - networkHeight*scaleDifference
-
-	console.log("   using networkD - networkD*scaleDifference " + 
-		      "\n     (" + networkWidth + " - " + (networkWidth*scaleDifference) + ")" + 
-		      "\n     (" + networkHeight + " - " + (networkHeight*scaleDifference) + ")" + 
-		      "\n       network c width: " + (networkWidth - networkWidth*scaleDifference) + 
-			  "\n       network c height: " + (networkHeight - networkHeight*scaleDifference)) 
-
-	//networkCWidth = networkWidth + networkWidth*scaleDifference
-	//networkCHeight = networkHeight + networkHeight*scaleDifference
-
-	console.log("   using networkD + networkD*scaleDifference " +   
-		      "\n     (" + networkWidth + " + " + (networkWidth*scaleDifference) + ")" + 
-		      "\n     (" + networkHeight + " + " + (networkHeight*scaleDifference) + ")" + 
-		      "\n       network c width: " + (networkWidth + networkWidth*scaleDifference) + 
-			  "\n       network c height: " + (networkHeight + networkHeight*scaleDifference)) 
+function recalculateNetworkTopLeft(){ 
 
 	// translate is smaller than it should be? network jumps to bottom left
-	networkCWidth = svgWidth/scale 
-	networkCHeight = svgHeight/scale
-
-	console.log("   using svgD/scale * " +  
-		      "\n       network c width: " + (svgWidth/scale) + 
-			  "\n       network c height: " + (svgHeight/scale)) 
-
-	// zooms from top left
-	//networkCWidth = networkWidth
-	//networkCHeight = networkHeight
-	//
-	//console.log("   using networkD" +  
-	//	      "\n       network c width: " + networkWidth + 
-	//		  "\n       network c height: " + networkHeight) 
-
-	// width   scaleDifference    	width-width*sD		scaleDifference		width*sD
-	// 1000          0            		1000  			      1 			  1000
-	// 1000          0.1          		 900		        1.1 			  1100
-	// 1000         -0.1          		1100	            0.9 			   900
-
-	if (print) { 
-		console.log("\nrecalulating translation")
-		console.log("   previous translation: " + 
-			      "\n     translateX: " + translateX + 
-			      "\n     translateY: " + translateY + "\n")
-		console.log("   scale: " + scale)
-		console.log("   scale difference: " + scaleDifference + "\n")     
-		console.log("   network center: " + networkCenter[0] + 
-		          "\n                   " + networkCenter[1])  
-		console.log("     network width: " + networkWidth + 
-			      "\n     network height: " + networkHeight)
-		console.log("     network c width: " + networkCWidth + 
-			      "\n     network c height: " + networkCHeight) 
-	}
-	
-
- 	 
-	//scaledCenter = [networkCenter[0]*scale, networkCenter[1]*scale]
-
-	//console.log("   scaled center: " + scaledCenter)
+	networkWidth = svgWidth/scale 
+	networkHeight = svgHeight/scale  
 
 	// need to know network width to figure out new top left x,y for translating
-	networkTopLeft = [networkCenter[0] - networkCWidth/2, networkCenter[1] - networkCHeight/2]
-
-	if(print){
-		console.log("   distance to txy: " + 
-			      "\n        x: " + (networkCWidth/2) + 
-			      "\n        y: " + (networkCHeight/2)) 
-	}
-
-	console.log("   network top left: " + networkTopLeft[0] + 
-		      "\n                     " + networkTopLeft[1])
-	console.log("   network center: " + networkCenter[0] + 
-		      "\n                   " + networkCenter[1]) 
+	networkTopLeft = [networkCenter[0] - networkWidth/2, networkCenter[1] - networkHeight/2] 
 
 	return networkTopLeft 
 }
@@ -1279,8 +1161,7 @@ function recalculateNetworkTopLeft(print){
  **/ 
 function zoomIn()
 {
-	//zoom(1.1);
-	zoom(0.1) 
+	zoom(1.15); 
 }
 
 /**
@@ -1288,18 +1169,13 @@ function zoomIn()
  **/ 
 function zoomOut()
 {
-	//zoom(0.9);
-	zoom(-0.1)
+	zoom(0.85); 
 }
 
-function transformToDisplayArea(leftX, topY, rightX, bottomY){
-	
-	console.log("transforming to display area. ") 
+function transformToDisplayArea(leftX, topY, rightX, bottomY){ 
 
 	displayedWidth = rightX - leftX
 	displayedHeight = bottomY - topY
-
-
 
 	widthRatio = svgWidth/displayedWidth
 	heightRatio = svgHeight/displayedHeight 
@@ -1311,130 +1187,24 @@ function transformToDisplayArea(leftX, topY, rightX, bottomY){
 	} 
 
 	svgScale.setAttribute('transform', 'scale(' + ratio + ')') 
-	scale = ratio
-	originalScale = ratio
-	scaleDifference = 0
+	scale = ratio 
+  
 
-	networkWidth = svgWidth/scale//rightX - leftX;
-	networkHeight = svgHeight/scale//bottomY - topY;
-
-	console.log("  svgWidth: " + svgWidth + "\n  svgHeight: " + svgHeight)
-
-	console.log("\n  network width: " + networkWidth + "\n  networkHeight: " + networkHeight + 
-		"\n  displayedWidth: " + displayedWidth + "\n  displayedHeight: " + displayedHeight + "\n") 
-	
-
-	//networkCenter = [leftX + networkWidth/2, topY + networkHeight/2]
-
-	//console.log("  network center before centering: " + networkCenter[0] + 
-	//	      "\n                   " + networkCenter[1]) 
- 
- 	// whichever dimension has the unused ratio is currently uncentered: center it
- 	//if (heightRatio < widthRatio){
-	//	networkCenter[0] += (networkWidth - displayedWidth)/2
-	//} else {
-	//	networkCenter[1] += (networkHeight - displayedHeight)/2 
-	//} 
-
-	//console.log("  network center after centering: " + networkCenter[0] + 
-	//	      "\n                   " + networkCenter[1]) 
-
-	//origin = paper.circle(0,0,20)
-	//originalCenter = paper.circle(networkCenter[0],networkCenter[1],20)
-	//beginningTransform = recalculateNetworkTopLeft(false)
-	//originalTranslate = paper.circle(beginningTransform[0],beginningTransform[1],20)
-	//originalCenter = paper.circle(3735,1405,20) 
-	//originalTranslate = paper.circle(1129,0,20)
-
-	//origin.attr({fill: "#9900CC"/*, stroke:"transparent","opacity":".90"*/}) 				// magenta
-	//originalCenter.attr({fill: "#FF0000"/*, stroke:"transparent","opacity":".90"*/}) 		// red
-	//originalTranslate.attr({fill: "#99CCFF"/*, stroke:"transparent","opacity":".90"*/}) 	// light blue
-
-	networkCenter = [(leftX+rightX)/2, (topY+bottomY)/2]
-
-	console.log("  network center: " + networkCenter[0] + 
-		      "\n                  " + networkCenter[1])  
-
-	console.log("calling reset translate to update translation. (leaving transformToDisplayArea)")
-	resetTranslation(true) 
+	networkCenter = [(leftX+rightX)/2, (topY+bottomY)/2] 
+	resetTranslation() 
 
 }
-
-function transformToDisplayAreaOriginal(leftX, topY, rightX, bottomY){
-	
-	console.log("transforming to display area. ") 
-
-	displayedWidth = rightX - leftX
-	displayedHeight = bottomY - topY
-
-
-
-	widthRatio = svgWidth/displayedWidth
-	heightRatio = svgHeight/displayedHeight 
-
-	if (heightRatio < widthRatio){
-		ratio = heightRatio
-	} else {
-		ratio = widthRatio
-	} 
-
-	svgScale.setAttribute('transform', 'scale(' + ratio + ')') 
-	scale = ratio
-	originalScale = ratio
-	scaleDifference = 0
-
-	networkWidth = svgWidth/scale//rightX - leftX;
-	networkHeight = svgHeight/scale//bottomY - topY;
-
-	console.log("  svgWidth: " + svgWidth + "\n  svgHeight: " + svgHeight)
-
-	console.log("\n  network width: " + networkWidth + "\n  networkHeight: " + networkHeight + 
-		"\n  displayedWidth: " + displayedWidth + "\n  displayedHeight: " + displayedHeight + "\n") 
-	
-
-	networkCenter = [leftX + networkWidth/2, topY + networkHeight/2]
-
-	console.log("  network center before centering: " + networkCenter[0] + 
-		      "\n                   " + networkCenter[1]) 
  
- 	// whichever dimension has the unused ratio is currently uncentered: center it
- 	if (heightRatio < widthRatio){
-		networkCenter[0] += (networkWidth - displayedWidth)/2
-	} else {
-		networkCenter[1] += (networkHeight - displayedHeight)/2 
-	} 
-
-	console.log("  network center after centering: " + networkCenter[0] + 
-		      "\n                   " + networkCenter[1]) 
-
-	//origin = paper.circle(0,0,20)
-	//originalCenter = paper.circle(networkCenter[0],networkCenter[1],20)
-	//beginningTransform = recalculateNetworkTopLeft(false)
-	//originalTranslate = paper.circle(beginningTransform[0],beginningTransform[1],20)
-	//originalCenter = paper.circle(3735,1405,20) 
-	//originalTranslate = paper.circle(1129,0,20)
-
-	//origin.attr({fill: "#9900CC"/*, stroke:"transparent","opacity":".90"*/}) 				// magenta
-	//originalCenter.attr({fill: "#FF0000"/*, stroke:"transparent","opacity":".90"*/}) 		// red
-	//originalTranslate.attr({fill: "#99CCFF"/*, stroke:"transparent","opacity":".90"*/}) 	// light blue
-
-
-	console.log("calling reset translate to update translation. (leaving transformToDisplayArea)")
-	resetTranslation(true) 
-
-}
 
 function zoom(factor){ 
 	console.log("\n\nzooming by " + factor)
 	console.log("current scale " + scale)
-	if(!isNaN(factor) && (scale + factor) >= 0){    
-		 
-		scale += factor 
-		scaleDifference += factor
+	if(!isNaN(factor)){      
+		scale *= factor  
+
 		
-		svgScale.setAttribute('transform', 'scale(' + scale + ')')   
-		//svgPan.setAttribute('transform', 'translate(' + translateX + ',' + translateY + ')')  
-		resetTranslation(true)
+		svgScale.setAttribute('transform', 'scale(' + scale + ')')    
+		resetTranslation()
 	}
 }
 
@@ -1442,16 +1212,12 @@ function zoom(factor){
 /**
  * Updates Raphael/SVG's viewbox properties to shift the visible portion of the canvas.
  **/
-function refreshViewBox(){ 
-	svg = document.getElementsByTagName("svg")[0];
-	//svg.viewBox = viewBox[0].toString() + " " + viewBox[1].toString() + " " + viewBox[2].toString() + " " + viewBox[3].toString() + " ";   
-	
-	// view box: leftX, topY, rightX, bottomY   
+function initViewBox() { 
+	svg = document.getElementsByTagName("svg")[0]; 
+	// view box: [leftX, topY, rightX, bottomY]   
 	w = viewBox[2] - viewBox[0]; 
 	h = viewBox[3] - viewBox[1];  
-	paper.setViewBox(0 - viewBox[0], 0 - viewBox[1], w, h);    
- 
-	//viewRectangle.attr({x:viewBox[0], y:viewBox[1], w:(viewBox[2]-viewBox[0]), h:(viewBox[3]-viewBox[1])})
+	paper.setViewBox(0 - viewBox[0], 0 - viewBox[1], w, h);     
 }
 
  
@@ -1460,14 +1226,11 @@ function refreshViewBox(){
 /**
  * Responds a change in the budget slider (once user has stopped dragging the handle)
  **/
-function updateBudget(){
-	// tmp comment ourAlert("budget changing!");
-	if(dataManager.budget == slider.value){
-		// tmp comment ourAlert("actually, the budget is the same!");
-	} else {
+function updateBudget(){ 
+	if(dataManager.budget != slider.value){ 
 		dataManager.budget = slider.value;
 		dataManager.updateSolution();
-	}
+	} 
 }
  
 /**
@@ -1508,32 +1271,7 @@ function ourAlert(text){
 	}
 } 
 
-/**
- * Opens a jquery message dialogue with the given text. 
- **/ 
-function openJQueryAlert(text){
-	$("#dialog-confirm").html(text); 
-	//alert("making dialogue box. text \n" + text)
-	// Define the Dialog and its properties.
-    $("#dialog-confirm").dialog({
-		resizable: true,
-		modal: false,
-		title: "alert",
-		height: 250,
-		width: 400,
-		buttons: {
-			"Okay": function () {
-				$(this).dialog('close'); 
-				return false;
-			}, 
-			"Stop Alerts": function () {
-			    $(this).dialog('close');
-			    shouldDisplayAlerts = false;
-			    return false;
-			}
-		}
-	}); 
-}
+ 
 
 /**
  * Add mouse events to the page (hover, drag, click)
@@ -1556,23 +1294,16 @@ function addMouseEvents(){
         var canvas = document.getElementById("canvas");
 
         // Action performed when mouse button if pressed down
-        var mouseDownListener = function(event){
-
-        	//tmpconsole.log("mouse down");
+        var mouseDownListener = function(event){ 
 
             mouseIsDown = true;
             mouseDownX = event.pageX;
-            mouseDownY = event.pageY;
-
-
-
-            //tmpconsole.log("initial position :" + mouseDownX + " and " + mouseDownY);
+            mouseDownY = event.pageY; 
         };
 
         // Action performed when mouse button is released
         var mouseUpListener = function(event)
-        {
-        	//tmpconsole.log("mouse up");
+        { 
         	
         	mouseIsDown = false;
         }
@@ -1583,115 +1314,41 @@ function addMouseEvents(){
 
         	// Do nothing unless dragging
         	if(mouseIsDown)
-        	{ 
-        		//tmpconsole.log("dragging");  
-
+        	{    
         		currentx = event.pageX ;
         	    currenty = event.pageY ;
 
         	    xChange = currentx - mouseDownX;
         	    yChange = currenty - mouseDownY;
+
         	    mouseDownX = currentx;
-        	    mouseDownY = currenty;
+        	    mouseDownY = currenty; 
 
-        	    // if negative, zoomed out; if positive, zoomed in
-        	    //scaleDifference = scale - originalScale
-				
-				/*console.log("\n\nmouse drag")
-        		console.log("scaleDifference:  " + scaleDifference) 
-        		console.log("   originalScale: " + originalScale)
-        		console.log("   scale:         " + scale)
-        		console.log("xChange: " + xChange)
-        		console.log("yChange: " + yChange)
-        	    
-
-        	    // zoomed out: more is displaying on screen, so translate by more
-        	    if(scaleDifference < 0){
-        			scaleDifference = 0 - (scaleDifference * 0.4)
-        	    	xChange *= (1 + scaleDifference)
-        	    	yChange *= (1 + scaleDifference)
-        	    } else if (scaleDifference > 0) {
-        	    	scaleDifference = scaleDifference * 0.4
-        	    	xChange *= (1 - scaleDifference)
-        	    	yChange *= (1 - scaleDifference)
-        	    }  
-
-        	   	console.log("new xChange: " + xChange)
-        		console.log("new yChange: " + yChange)*/
-
-        		//translate(xChange*xScale*0.5,yChange*yScale*0.5);
-        		translate(xChange,yChange);
-
-            //tmpconsole.log("xChange:" + xChange + " and yChange   " + yChange);
-                        //tmpconsole.log("viewbox xrange   :" + xRange + " and yRange   " + yRange);
-
-
-
+        		translate(xChange,yChange);  
         	}
         }
 
         // Action performed when mouse scroll is scrolled
         var mouseZoomListener = function(event)
         {
-        	  /* we want to prevent document scrolling when pressing the arrows: */
+        	/* we want to prevent document scrolling when pressing the arrows: */
 		    event.preventDefault();
 
 		    // Delta returns +120 when up and -120 when down 
 		    // There might be some browser issues according to online sources
 		    // For now it works for chrome
             if (event.wheelDelta >= 120)
-            	{zoom(1.1);}
+            	{zoomIn();}
     		else if (event.wheelDelta <= -120)
-            	{zoom(0.9);}
+            	{zoomOut();}
 
-        }
-
-        var mouseDragListener = function(event)
-        {
-        	alert("drag!")
-        	//tmpconsole.log("dragging");
-        		var currentx = event.pageX;
-        	    var currenty = event.pageY;
-
-        	    var xChange = currentx - mouseDownX;
-        	    var yChange = currenty - mouseDownY;
-        	    //tmpconsole.log("xChange  :" + xChange + " and \n yChange   :" + yChange);
-      		    //tmpconsole.log("current position :" + currentx + " and " + currenty);
-      		    //tmpconsole.log("xScale  :" + xScale + " and yScale : " + yScale);
-  
-        	    //translate(xChange-w,yChange-h);
-        	    if(scale == originalScale){
-        	    	scaleChange = 1
-        	    } else {
-        	    	scaleChange = (scale - originalScale)
-        		}
-
-        		console.log("\n\nmouse drag")
-        		console.log("scaleChange: " + scaleChange)
-        		console.log("   originalScale: " + originalScale)
-        		console.log("   scale:         " + scale)
-        		console.log("xChange: " + xChange)
-        		console.log("yChange: " + yChange)
-
-        	    xChange = xChange/scaleChange
-        	    yChange = yChange/scaleChange
-
-        	    console.log("new xChange: " + xChange)
-        		console.log("new yChange: " + yChange)
-
-        	    translate(xChange,yChange);
-
-        	    mouseDownX = currentx;
-        	    mouseDownY = currenty;
-
-        }
+        } 
 
         //Adding all the listeners for mouse events: down, up, move, scroll
         canvas.addEventListener("mousedown",mouseDownListener,false);
         canvas.addEventListener("mouseup", mouseUpListener,false);
         canvas.addEventListener("mousemove", mouseMoveListener, false);
-        canvas.addEventListener('mousewheel', mouseZoomListener, false); 
-        //canvas.addEventListener('mousedrag', mouseDragListener, false);
+        canvas.addEventListener('mousewheel', mouseZoomListener, false);  
 
     }); 
 }
@@ -1724,30 +1381,21 @@ function addKeyPressEvents(){
 			translate(0, -10) 
 		} 
 		else if(event.keyCode == arrowKeys["plus"]){
-			zoom(0.1) 
+			zoomIn() 
 		} 
 		else if(event.keyCode == arrowKeys["minus"]){
-			zoom(-0.1)
-		} else if (event.keyCode == 84){   
-			// t
-			testNetwork = [500, 300]
-			testScaled = convertToScaledCoordinates(testNetwork)
-			testReciprocal = convertToNetworkCoordinates(testScaled) 
-
-			console.log("made up network coodinates: " + testNetwork + "\n" + 
-				        "converted to scaled: " + testScaled + "\n" + 
-				        "test change back: " + testReciprocal)
-		} else {
+			zoomOut()
+		} 
+		else {
 			console.log("irrelevantKey: " + event.keyCode)
 			irrelevantKey = true
 		}
 	
-
+		/* we want to prevent document scrolling when pressing the arrows: */ 
 		if (!irrelevantKey){
 			event.preventDefault();
 		}
-		/* we want to prevent document scrolling when pressing the arrows: */
-		//
+		
 	
 	});
 }
@@ -1794,89 +1442,18 @@ function initDisplaySettings(){
     // Setting preserveAspectRatio to 'none' lets you stretch the SVG
 	paper.canvas.setAttribute('preserveAspectRatio', 'none');
  
-	refreshViewBox() 
+	initViewBox()  
 }
 
 
-function initTransformElements(){  
-	origin = paper.circle(0,0,20) 
-	//originalCenter = paper.circle(networkCenter[0],networkCenter[1],20)
-	//beginningTransform = recalculateNetworkTopLeft(false)
-	//originalTranslate = paper.circle(beginningTransform[0],beginningTransform[1],20)
-	originalCenter = paper.circle(3735,1405,20) 
-	dimensionOver2 = paper.circle(2602,1405,20)  // width/2 or 3735-1129
-	dimensionOver22 = paper.circle(1477,1405,20) // 3734-1129-1129 
-	dimensionOver222 = paper.circle(348,1405,20) // 3735-1129-1129-1129 
-	originalTranslate = paper.circle(-1129,0,20)
+function initTransformElements(){   
 
-	origin.attr({fill: "#9900CC"/*, stroke:"transparent","opacity":".90"*/}) 				// magenta 
-	originalCenter.attr({fill: "#FF0000"/*, stroke:"transparent","opacity":".90"*/}) 		// red
-	dimensionOver2.attr({fill: "#99FF66"/*, stroke:"transparent","opacity":".90"*/}) 		// green
-	dimensionOver22.attr({fill: "#33CC33"/*, stroke:"transparent","opacity":".90"*/}) 		// darker green
-	dimensionOver222.attr({fill: "#005200"/*, stroke:"transparent","opacity":".90"*/}) 		// even darker green 
-	originalTranslate.attr({fill: "#99CCFF"/*, stroke:"transparent","opacity":".90"*/}) 	// light blue
-	
-	originalCenter.hover(function(){
-					alert("3735, 1405")  
-				}, function(){});
-	dimensionOver2.hover(function(){
-					alert("2602, 1405")  
-				}, function(){});
-	dimensionOver22.hover(function(){
-					alert("1477, 1405")  
-				}, function(){});
-	dimensionOver222.hover(function(){
-					alert("348, 1405")  
-				}, function(){});
-	originalTranslate.hover(function(){
-					alert("-1129, 0")  
-				}, function(){});
-	origin.hover(function(){
-					alert("0, 0")  
-				}, function(){}); 
-
-	/*
-	// translate on outside
 	translateX = 0
 	translateY = 0   
 	scale = 1
 
 	svgPan = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
-	svgPan.setAttribute('transform', 'translate(0,0)');  
-	//svgPan.setAttribute('transform', 'translate(20,20)');   
-
-	svgScale = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
-	svgScale.setAttribute('transform', 'scale(1)');  
-	
-	var svgComponents = canvas.childNodes
-	var svgComponent = svgComponents[0] 
-
-	$(svgComponent).wrapInner(svgPan)
-
-	//svgPan.setAttribute('transform', 'translate(40,40)');   
-
-	var wrapper = svgComponent.childNodes[0]
-
-	//wrapper.setAttribute('transform', 'translate(40,40)');  
-
-	// $(svgPan).wrapInner(svgScale) does not work
-	$(wrapper).wrapInner(svgScale) 
-
-	svgPan = wrapper
-	svgScale = wrapper.childNodes[0]
-	*/
-
-
-	
-	  // dan thinks zoom needs to be on the inside? seems like I wrote this comment backwards??
-	  // zoom on outside
-	translateX = 0
-	translateY = 0   
-	scale = 1
-
-	svgPan = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
-	svgPan.setAttribute('transform', 'translate(0,0)');  
-	//svgPan.setAttribute('transform', 'translate(20,20)');   
+	svgPan.setAttribute('transform', 'translate(0,0)');   
 
 	svgScale = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
 	svgScale.setAttribute('transform', 'scale(1)');  
@@ -1890,9 +1467,7 @@ function initTransformElements(){
 
 	var wrapper = svgComponent.childNodes[0]
 
-	wrapper.setAttribute('transform', 'translate(40,40)');  
-
-	// $(svgScale).wrapInner(svgScale) does not work
+	wrapper.setAttribute('transform', 'translate(40,40)');   
 	$(wrapper).wrapInner(svgPan) 
 
 	svgScale = wrapper
@@ -1907,11 +1482,7 @@ function initTransformElements(){
  * Initializes variables for NetworkExplorer and adds listeners to items
  * on the webpage. 
  **/ 
-function main(){  
-
-	// 2015 commented out: want initial display  to be according to the max x,y values
-	// so must call in init() when we have the data
-	// cannot add events until we have created the canvas, which we do in initDisplaySettings
+function main(){   
 	initDisplaySettings() 
 	addAllPageEvents()
  
@@ -1933,18 +1504,9 @@ function main(){
 	dataManager.budget = slider.value;
 
 	// change the source file for the data
-	 $.get("BarrierAndStreamInfoOpt.json", function(data){  
-	// $.get("BarrierAndStreamInfoOptFlipped.json", function(data){  
-	// $.get("BarrierAndStreamInfoOptScriptUpdated.json", function(data){     
-	// $.get("BarrierAndStreamInfoSmallerDivisor.json", function(data){ 
- 	//$.get("BarrierAndStreamInfoOpt50.json", function(data){ 
-	//$.get("BarrierAndStreamInfoOptReduced.json", function(data){ 
-	//$.get("BarrierAndStreamInfoOptNetworkReduced2.json", function(data){  
-	//$.get("BarrierAndStreamInfo.json", function(data){
-	//$.get("BarrierAndStreamInfoSubNetwork.json", function(data){	
+	 $.get("BarrierAndStreamInfoOpt.json", function(data){   
 		dataManager.init(data);
-		dataManager.addEventsToAllBranches(dataManager.networkSource);
-		// tmp comment ourAlert("finished setting things up!") 
+		dataManager.addEventsToAllBranches(dataManager.networkSource); 
 	});  
 }
  

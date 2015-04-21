@@ -1,3 +1,130 @@
+var styles = {
+	"unselectedNode": {
+		r       : 2,
+		fill    :  "#D4D4D4",
+		opacity : ".30", 
+		stroke  : "transparent",
+		"stroke-width": 0,
+		"stroke-opacity": 0
+	},
+	"nonBarrier": {
+		r                : 2,
+		fill             : "CCCCCC", // gray	
+		opacity          : 0.70, 
+		stroke           : "transparent", 
+		"stroke-width"   : 0,
+		"stroke-opacity" : 0
+	},
+	"crossingNoAction": {
+		r                : 5,
+		fill             : "#BC8F8F", // rosy brown //"#FFFF00", // red
+		opacity          : 0.75, 
+		stroke           : "transparent",
+		"stroke-width"   : 0,
+		"stroke-opacity" : 0
+	},
+	damNoAction: {
+		r                : 10,
+		fill             : "#FF8080", // red
+		opacity          : 0.8,
+		stroke           : "transparent",
+		"stroke-width"   : 0,
+		"stroke-opacity" : 0
+	},
+	crossingAction: {
+		r                : 6,
+		fill             : "#00FF00", // green "#00FF7F",  // spring green "#FFFF00", // yellow
+		opacity          : 1,
+		stroke           : "#666666", // medium gray
+		"stroke-width"   : 3,
+		"stroke-opacity" : 1
+	},
+	damAction: {
+		r              : 30,
+		fill           : "#00FF00", // green  // spring green "#FFFF00", // yellow
+		opacity        : "1",
+		stroke         : "#666666", // medium gray
+		"stroke-width" : 10,
+		"stroke-opacity": 1
+	}
+}
+
+var originalStyle = {
+	"color": {
+		"nonBarrier"          : "#003366", // blue
+		"crossingNoAction"    : "#FFFF66", // yellow			"#087e7d"
+		"crossingNoActionStroke": "transparent",
+		"crossingAction"      : "#78c44c", // green		//"#087e7d"		// turquoise		"#FFFF66"
+		"crossingActionStroke": "transparent",
+
+		"damNoAction"         : "#FF6E2C", // orange			"#78c44c"
+		"damNoActionStroke"   : "transparent",
+		"damAction"           : "#8D198D",  // purple		//"#9966FF" 	// purple"		//"#78c44c" // green "#FFFF66"
+		damActionStroke       : "transparent",
+
+		"pathToRootBarrier"   : "#003366",		// light green
+		"pathToRootNonBarrier": "#669900",	// blue
+		"unselectedNode"      : "#D4D4D4",			// grey
+		"pathToRootStream"    : "black",			// black
+		"unselectedStream"    : "#CCCCCC"		// grey
+	},
+	"size": {
+		"nonBarrier"                 : 3,
+		"crossingNoAction"           : 3,
+		"crossingNoActionStrokeWidth": 0,
+		"crossingAction"             : 5,
+		"crossingActionStrokeWidth"  : 2,
+		"damNoAction"                : 5,
+		"damNoActionStrokeWedth"     : 0,
+		"damAction"                  : 7,
+		"damActionStrokeWidth"       : 2,
+		"selectedStreamWidth"        : 7,
+		"deselectedStreamWidth"      : 5,
+		"pathToRootStreamWidth"      : 7
+
+	},
+	colorScaleFunction : chroma.interpolate.bezier(['#223535', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue'])
+};
+
+var whiteStyle = {
+	"color": {
+		"nonBarrier"          : "#CCCCCC", 
+		"crossingNoAction"    : "#FF0000", // red
+		"damNoAction"         : "#FF0000", // red
+		"crossingAction"      : "#FFFF00", // yellow
+		crossingActionStroke  : "#999999", // charcoal
+		"damAction"           : "#FFFF00", // yellow
+		 damActionStroke      : "#999999", // charcoal
+		"pathToRootBarrier"   : "#A0A0A0", // gray
+		"pathToRootNonBarrier": "#A0A0A0", // gray
+		"unselectedNode"      : "#D4D4D4", // grey
+		"pathToRootStream"    : "black",   // black
+		"unselectedStream"    : "#CCCCCC"  // grey
+	},
+	"size": {
+		"nonBarrier"            : 2,
+		"crossingNoAction"      : 4,
+		"damNoAction"           : 6,
+		"crossingAction"        : 10,
+		"damAction"             : 14,
+		"selectedStreamWidth"   : 9,
+		"deselectedStreamWidth" : 1,
+		"pathToRootStreamWidth" : 7
+	},
+
+    colorScaleFunction : chroma.interpolate.bezier(['#E0E0E0', 'lightgreen', 'teal', 'mediumblue'])
+//    colorScaleFunction : chroma.interpolate.bezier(['#CCDDEE', 'lightgreen', 'teal', 'mediumblue'])
+//    colorScaleFunction : chroma.interpolate.bezier(['#BBBBBB', 'lightgreen', 'teal', 'navy'])
+//	colorScaleFunction : chroma.scale('OrRd')
+//    colorScaleFunction : chroma.interpolate.bezier(['lightyellow', 'lightgreen', 'teal', 'navy'])
+//	colorScaleFunction : chroma.interpolate.bezier(['lightgray', 'lightgreen', 'teal', 'navy'])
+	//	colorScaleFunction : chroma.interpolate.bezier(['lightgray', 'deepskyblue', 'cornflowerblue', 'slateblue'])   best so far
+	//colorScaleFunction : chroma.interpolate.bezier(['lightgray', 'lightgray', 'deepskyblue'])
+	//colorScaleFunction : chroma.interpolate.bezier(['lightyellow', 'orange', 'deeppink', 'darkred'])
+};
+
+
+var style = whiteStyle;
 
 /**********************************************************************************************
  *  Node class. 
@@ -247,15 +374,15 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	Node.prototype.getNodeRadius = function(){
 		if(this.currentAction == -1){
 			if (!this.isBarrier || this.barrierType == 1){
-				return crossingSize
+				return style.size.crossingNoAction;
 			} else {
-				return damSize
+				return style.size.damNoAction;
 			}
 		} else {
 			if (!this.isBarrier || this.barrierType == 1){
-				return crossingSize + 2
+				return style.size.crossingAction;
 			} else {
-				return damSize + 2
+				return style.size.damAction;
 			}
 		}
 	},
@@ -287,39 +414,31 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			return  
 		}
 
-		nonBarrier = "#003366"			// blue
-		crossingNoAction = "#FFFF66"	// yellow			"#087e7d"
-		damNoAction = "#FF6E2C"			// orange			"#78c44c"
-		crossingAction = "#78c44c"		// green		//"#087e7d"		// turquoise		"#FFFF66"
-		damAction = "#8D198D"			// purple		//"#9966FF" 	// purple"		//"#78c44c"			// green			"#FFFF66"
-
-		nodeSize = this.getNodeRadius()
-
 		// selected
 		// color the node  
 		if (!this.needsNodeDrawing){
 			if (!this.isBarrier){ 
 				// the only node that isn't a barrier and is being colored is the root
-				this.nodeDrawing.attr({fill: nonBarrier, stroke:"transparent","opacity":".70"});
+				this.nodeDrawing.attr(styles.nonBarrier);
 			} else {
 				// no action taken
 				if (this.currentAction == -1){
 					// crossing, no action taken
 					if(this.barrierType == 1){
-						this.nodeDrawing.attr({fill: crossingNoAction /*"#18500F"*/, stroke:"transparent","opacity":"0.75", r:nodeSize}); 
+						this.nodeDrawing.attr(styles.crossingNoAction);
 					} 
 					// dam, no action taken
 					else { 
-						this.nodeDrawing.attr({fill: damNoAction, stroke:"transparent","opacity":"0.80", r:nodeSize});  
+						this.nodeDrawing.attr(styles.damNoAction);
 					} 
 				} 
 				// some action taken (dam or crossing)
 				else {
 					if(this.barrierType == 1){
-						this.nodeDrawing.attr({fill: crossingAction, stroke:"transparent","opacity":".80",r:nodeSize});
+						this.nodeDrawing.attr(styles.crossingAction);
 					} 
 					else {
-						this.nodeDrawing.attr({fill: damAction, stroke:"transparent","opacity":".85",r:nodeSize});
+						this.nodeDrawing.attr(styles.damAction);
 					}
 				}
 			}
@@ -328,7 +447,9 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		// color the paths to the children (river segments)
 		for (index in this.children[0]){ 
 			colorString = this.getColor(this.children[2][index])
-			this.children[3][index].attr({stroke:colorString,"stroke-width":selectedStreamWidth}); 
+			this.children[3][index].attr({
+				stroke         : colorString,
+				"stroke-width" : style.size.selectedStreamWidth}); 
 		}
 	},
 
@@ -340,33 +461,42 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			return    
 		} 
 
-		pathToRootBarrier = "#003366"		// light green
-		pathToRootNonBarrier = "#669900"	// blue
-		unselectedNode = "#D4D4D4"			// grey
-		pathToRootStream = "black"			// black
-		unselectedStream = "#A0A0A0"		// grey
-		nodeSize = this.getNodeRadius()
+		nodeSize = this.getNodeRadius();
 
 		if (!this.needsNodeDrawing){
 			if(this.partiallySelected){
 				// on the path to the root 
 				if(!this.isBarrier){
-					this.nodeDrawing.attr({fill:pathToRootBarrier, stroke:"transparent","opacity":".55", r:nodeSize}); 
+					var nodeSize = this.barrierType == 1 ? style.size.crossingNoAction : style.size.damNoAction;
+					this.nodeDrawing.attr({
+						fill    : style.color.pathToRootBarrier, 
+						stroke  : "transparent",
+						opacity : ".55", 
+						r       : nodeSize}); 
 				} else {
-					this.nodeDrawing.attr({fill: pathToRootNonBarrier, stroke:"transparent","opacity":".50", r:nodeSize}); 
+					this.nodeDrawing.attr({
+						fill    : style.color.pathToRootNonBarrier, 
+						stroke  : "transparent",
+						opacity : ".50", 
+						r       : style.size.nonBarrier}); 
 				}
 			} else {
 				// completely unselected
-				this.nodeDrawing.attr({fill: unselectedNode, stroke:"transparent","opacity":".30", r:nodeSize});  
+				this.nodeDrawing.attr(styles.unselectedNode);
 			} 
 		}
  
 		for (index in this.children[0]){  
 			// if this and the child are partiallySelected, color the stream black (path to root)
 			if(this.partiallySelected && (this.children[0][index].partiallySelected || this.children[0][index].selected)){
-				this.children[3][index].attr({stroke:pathToRootStream}); 
+				this.children[3][index].attr({
+					stroke        : style.color.pathToRootStream,
+					"stroke-width": style.size.pathToRootStreamWidth
+				}); 
 			} else { 
-				this.children[3][index].attr({stroke:unselectedStream,"stroke-width":deselectedStreamWidth}); // grey
+				this.children[3][index].attr({
+					stroke        : style.color.unselectedStream,
+					"stroke-width": style.size.deselectedStreamWidth}); // grey
 			}  
 		} 
 	},
@@ -376,7 +506,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
  	 * Get the appropriate color for a stream segment. 
  	 **/
 	Node.prototype.getColor = function(accessibility){   
-		return colorScaleFunction(accessibility).hex();
+		return style.colorScaleFunction(accessibility).hex();
 	},
 
 	/**
@@ -918,7 +1048,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
  
  				// add the path to the drawing canvas
 				path = paper.path(pathDirections);  
-				path.attr({"stroke-width":selectedStreamWidth});
+				path.attr({"stroke-width": style.size.selectedStreamWidth});
 				path.attr({stroke:"#FF4D4D"});  
 
 				// use the start and end points of the stream's path for the node's XY coordinates. 
@@ -1019,10 +1149,6 @@ var networkCenter;
 var colors;
 
 // visual settings for barriers and streams
-var damSize = 5
-var crossingSize = 3
-var selectedStreamWidth = 7 
-var deselectedStreamWidth = 5
 
 // settings for how to display alerts
 var shouldDisplayAlerts = false
@@ -1208,79 +1334,72 @@ function ourAlert(text){
  **/ 
 function addMouseEvents(){  
 
-	// On window load, add a bunch of listeners for mouse events
-	$(window).load(function () {
+	xRange = viewBox[2] - viewBox[0];
+	yRange = viewBox[3] - viewBox[1];
 
-	    xRange = viewBox[2] - viewBox[0];
-		yRange = viewBox[3] - viewBox[1];
+	var xScale = xRange/3000;
+	var yScale = yRange/3000;
 
-		var xScale = xRange/3000;
-		var yScale = yRange/3000;
+	var xChange = 0;
+	var yChange = 0;
+	var currentx = 0;
+	var currenty = 0;
+	var canvas = document.getElementById("canvas");
 
-		var xChange = 0;
-		var yChange = 0;
-		var currentx = 0;
-		var currenty = 0;
-        var canvas = document.getElementById("canvas");
+	// Action performed when mouse button if pressed down
+	var mouseDownListener = function(event){ 
+        mouseIsDown = true;
+        mouseDownX = event.pageX;
+        mouseDownY = event.pageY; 
+    };
 
-        // Action performed when mouse button if pressed down
-        var mouseDownListener = function(event){ 
+    // Action performed when mouse button is released
+    var mouseUpListener = function(event)
+    {         
+        mouseIsDown = false;
+    };
 
-            mouseIsDown = true;
-            mouseDownX = event.pageX;
-            mouseDownY = event.pageY; 
-        };
+    // Action performed when mouse is moving
+    var mouseMoveListener = function(event)
+    {
 
-        // Action performed when mouse button is released
-        var mouseUpListener = function(event)
-        { 
-        	
-        	mouseIsDown = false;
+        // Do nothing unless dragging
+        if(mouseIsDown)
+        {    
+        	currentx = event.pageX ;
+        	currenty = event.pageY ;
+
+        	xChange = currentx - mouseDownX;
+        	yChange = currenty - mouseDownY;
+
+        	mouseDownX = currentx;
+        	mouseDownY = currenty; 
+
+        	translate(xChange,yChange);  
         }
+    };
 
-        // Action performed when mouse is moving
-        var mouseMoveListener = function(event)
-        {
+    // Action performed when mouse scroll is scrolled
+    var mouseZoomListener = function(event)
+    {
+        /* we want to prevent document scrolling when pressing the arrows: */
+		event.preventDefault();
 
-        	// Do nothing unless dragging
-        	if(mouseIsDown)
-        	{    
-        		currentx = event.pageX ;
-        	    currenty = event.pageY ;
+		// Delta returns +120 when up and -120 when down 
+		// There might be some browser issues according to online sources
+		// For now it works for chrome
+        if (event.wheelDelta >= 120)
+        {zoomIn();}
+    	else if (event.wheelDelta <= -120)
+        {zoomOut();}
+    };
 
-        	    xChange = currentx - mouseDownX;
-        	    yChange = currenty - mouseDownY;
+    //Adding all the listeners for mouse events: down, up, move, scroll
+    canvas.addEventListener("mousedown",mouseDownListener,false);
+    canvas.addEventListener("mouseup", mouseUpListener,false);
+    canvas.addEventListener("mousemove", mouseMoveListener, false);
+    canvas.addEventListener('mousewheel', mouseZoomListener, false);  
 
-        	    mouseDownX = currentx;
-        	    mouseDownY = currenty; 
-
-        		translate(xChange,yChange);  
-        	}
-        }
-
-        // Action performed when mouse scroll is scrolled
-        var mouseZoomListener = function(event)
-        {
-        	/* we want to prevent document scrolling when pressing the arrows: */
-		    event.preventDefault();
-
-		    // Delta returns +120 when up and -120 when down 
-		    // There might be some browser issues according to online sources
-		    // For now it works for chrome
-            if (event.wheelDelta >= 120)
-            	{zoomIn();}
-    		else if (event.wheelDelta <= -120)
-            	{zoomOut();}
-
-        } 
-
-        //Adding all the listeners for mouse events: down, up, move, scroll
-        canvas.addEventListener("mousedown",mouseDownListener,false);
-        canvas.addEventListener("mouseup", mouseUpListener,false);
-        canvas.addEventListener("mousemove", mouseMoveListener, false);
-        canvas.addEventListener('mousewheel', mouseZoomListener, false);  
-
-    }); 
 }
 
 /**
@@ -1292,25 +1411,25 @@ function addKeyPressEvents(){
 
 		/* since we are using jquery, the event is already normalized */
 		var arrowKeys = {"left": 37, "up": 38, "right": 39, "down": 40, "plus": 187, "minus": 189};
-		var irrelevantKey = false
+		var irrelevantKey = false;
 		
 		// if a command or control key is pressed, the default 
 		// event should occur. 
 		if ((event.ctrlKey||event.metaKey)){
-			return
+			return;
 		}
 		
 		if(event.keyCode == arrowKeys["left"]) {
-		translate(10, 0)
+			translate(10, 0);
 		}
 		else if(event.keyCode == arrowKeys["up"]) {
-			translate(0, 10)			
+			translate(0, 10);			
 		}
 		else if(event.keyCode == arrowKeys["right"]) {
-			translate(-10, 0)
+			translate(-10, 0);
 		}
 		else if(event.keyCode == arrowKeys["down"]) {
-			translate(0, -10) 
+			translate(0, -10);
 		} 
 		else if(event.keyCode == arrowKeys["plus"]){
 			zoomIn() 
@@ -1345,31 +1464,28 @@ function addButtonEvents(){
  * Add all events (mouse, key, and button)
  **/ 
 function addAllPageEvents(){
-	addMouseEvents()
-	addKeyPressEvents()
-	addButtonEvents()
+	addMouseEvents();
+	addKeyPressEvents();
+	addButtonEvents();
 } 
 
 /**
  * Set up raphael paper element, and create the color scale for accessibility. 
  **/ 
 function initDisplaySettings(){
-	colorScaleFunction = chroma.interpolate.bezier(['#223535', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue'])  
+	browserWidth = $(window).width();
+	browserHeight = $(window).height();
 
-
-	browserWidth = $(window).width()
-	browserHeight = $(window).height()
-
-	width = browserWidth - 300 //752;//470;
-	height = browserHeight - 200 //470; 
+	width = browserWidth - 300; //752;//470;
+	height = browserHeight - 200; //470; 
  	 
-	viewBox = [0, 0, width, height] 
+	viewBox = [0, 0, width, height] ;
  
-	canvas = document.getElementById('canvas') 
+	canvas = document.getElementById('canvas');
 	paper = new Raphael(document.getElementById('canvas'), width, height);   
 
-	svgWidth = width
-	svgHeight = height
+	svgWidth = width;
+	svgHeight = height;
 
     // Setting preserveAspectRatio to 'none' lets you stretch the SVG
 	paper.canvas.setAttribute('preserveAspectRatio', 'none');
@@ -1392,20 +1508,20 @@ function initTransformElements(){
 	svgScale = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
 	svgScale.setAttribute('transform', 'scale(1)');  
 	
-	var svgComponents = canvas.childNodes
-	var svgComponent = svgComponents[0] 
+	var svgComponents = canvas.childNodes;
+	var svgComponent = svgComponents[0];
 
-	$(svgComponent).wrapInner(svgScale)
+	$(svgComponent).wrapInner(svgScale);
 
 	svgScale.setAttribute('transform', 'translate(40,40)');   
 
-	var wrapper = svgComponent.childNodes[0]
+	var wrapper = svgComponent.childNodes[0];
 
 	wrapper.setAttribute('transform', 'translate(40,40)');   
 	$(wrapper).wrapInner(svgPan) 
 
-	svgScale = wrapper
-	svgPan = wrapper.childNodes[0] 
+	svgScale = wrapper;
+	svgPan = wrapper.childNodes[0];
 }
 
 
@@ -1437,12 +1553,20 @@ function main(){
 	slider.max = 10000;
 	dataManager.budget = slider.value;
 
-	// change the source file for the data
-	 $.get("BarrierAndStreamInfoOpt.json", function(data){   
-		dataManager.init(data);
-		dataManager.addEventsToAllBranches(dataManager.networkSource); 
-	});  
+	if (typeof localData !== 'undefined') {
+		// Working locally: localData is a global variable loaded from localData.js
+		dataManager.init(localData);
+		dataManager.addEventsToAllBranches(dataManager.networkSource);
+	}
+	else {
+		// Normal case: make async call for the data
+		var barrierFile = "BarrierAndStreamInfoOpt.json"; // change this to use different data
+
+		$.get(barrierFile, function(data){  
+			dataManager.init(data);
+			dataManager.addEventsToAllBranches(dataManager.networkSource);
+		});
+	}
 }
- 
-// start everything!    
-main(); 
+
+// main() used to be called here. It is now called by the body onload handler from the HTML

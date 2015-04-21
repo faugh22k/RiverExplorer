@@ -2,8 +2,8 @@
 <html>
 	<head>
 		<title>Upstream Habitat Expansion Tool</title>
-		<link rel="stylesheet" href="styles.css">
-		<h2>Upstream Habitat Expansion Tool</h2>
+		<link rel="stylesheet" href="styles-white.css">
+		<h2>RiverExplorer</h2>
 	</head>
    <div class = "button">
 	    	<p id = "button1">
@@ -13,7 +13,7 @@
 	    	 <button type="button" id="zoomOut">-</button> 
 	    	</p>
 	</div>	
-	<body>    
+	<body onload="main()">    
 	    <div id="canvas", class="canvas"></div> 
         <br> 
 	    <div class="right">
@@ -39,6 +39,7 @@
   		<!--script src="raphaelUncompressed.js"></script!--> 
   		<script src="chroma.min.js"></script> 
 		
+		<script src="localData.js"></script> 
 		<script src="NetworkExplorer.js"></script> 
 
 		<!--script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script!--> 

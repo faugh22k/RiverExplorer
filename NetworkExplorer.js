@@ -1,3 +1,4 @@
+// This is the final format of styles...
 var styles = {
 	"unselectedNode": {
 		r       : 2,
@@ -49,6 +50,8 @@ var styles = {
 	}
 }
 
+
+// This is deprecated... and maybe not used. But is has the original colors, etc.
 var originalStyle = {
 	"color": {
 		"nonBarrier"          : "#003366", // blue
@@ -86,6 +89,7 @@ var originalStyle = {
 	colorScaleFunction : chroma.interpolate.bezier(['#223535', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue'])
 };
 
+// This is completely deprecated... I think
 var whiteStyle = {
 	"color": {
 		"nonBarrier"          : "#CCCCCC", 

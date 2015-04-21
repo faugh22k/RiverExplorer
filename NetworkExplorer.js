@@ -146,7 +146,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	this.passability = passability; // switch to see colors 0.93;   
 	this.passabilityImprovement = 0.0;
 	this.improvedPassability = this.passability;   
-	this.accessibilityFromRoot;
+	this.accessibilityFromRoot = -1;
 	this.accessibilityLeaving;
 	this.improvedAccessibilityFromRoot;
 	this.improvedAccessibilityLeaving; 
@@ -158,7 +158,7 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	this.children[2] = new Array(); // the accessibility of the stream segment to the child
 	this.children[3] = new Array(); // the streamSegments path object for drawing
 	this.children[4] = new Array(); // the stream id
-	this.outGoingAccessibility = 0.0;
+	this.outGoingAccessibility = 0.0; 
 	this.parent = parent;
 	this.selected = true;
 	this.partiallySelected = false;
@@ -539,8 +539,13 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			}
 		}
 
-		if (isOriginal)
-			this.originalHabitat = habitat
+		if (isOriginal) {
+			// original habitat is the original habitat for the subnetwork starting
+			// from this node. It is used to calculate habitat improvement, so it 
+			// should not be dependent upon the accessibilities of segments leading 
+			// to this subnetwork form the root. 
+			this.originalHabitat = habitat/this.accessibilityFromRoot
+		}
 		this.currentHabitat = habitat;
 		return habitat;
 	}, 
@@ -556,6 +561,10 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		if (this.children != null && this.children[2][0] != null){
 			originalAccessibility = this.children[2][0]
 			compare = true
+		}
+
+		if (this.accessibilityFromRoot == -1){
+			this.accessibilityFromRoot = comingIn
 		}
 
 		if(this.isBarrier){ 
@@ -1021,7 +1030,8 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
 				// this should not be necessary
 				// if a node is missing, build a default one
-				if (upstream == null){
+				if (upstream == null){ 
+					console.log("Data Error: Missing node while reading in streams data. !!! \n    building a default node (this should not be needed)") 
 					upstream = new Node(upstreamID, false, -1, null, 1.0, 0, 0, null, null)
 					allNodes[upstreamID] = upstream
 					nodesMissingReport += upstreamID + "\n"
@@ -1029,6 +1039,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				// this should not be necessary 
 				// if a node is missing, build a default one
 				if (downstream == null){
+					console.log("Error: Missing node while reading in streams data. \n    building default node (this should not be needed)")
 					downstream = new Node(downstreamID, false, -1, null, 1.0, 0, 0, null, null)
 					allNodes[downstreamID] = downstream
 					nodesMissingReport += upstreamID + "\n"

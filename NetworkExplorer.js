@@ -1,175 +1,258 @@
-// This is the final format of styles...
+// all the style options for the tool
+// format:
+// 		styles = {
+//			<style-option>,
+//			<style-option2> 
+// 			[...additional styles...]
+// 		}
+//
+//  	format of a style option:
+//  		style-option : {
+//				oneNodeTypeSettings : {
+//					r : __, fill : __, opacity : __, stroke : __
+//				} 
+//				[...settings for other node types...]
+//
+//				streamTypeSettigns : {
+//					"stroke-width" : __, stroke : __
+// 				}
+//			    [...settings for other stream types...] 
+//			}
+//			
 var styles = {
-	"unselectedNode": {
-		r       : 2,
-		fill    :  "#D4D4D4",
-		opacity : ".30", 
-		stroke  : "transparent",
-		"stroke-width": 0,
-		"stroke-opacity": 0
+	whiteStyle: {
+		"unselectedNode": {
+			r       : 2,
+			fill    :  "#D4D4D4",
+			opacity : ".30", 
+			stroke  : "transparent",
+			//"stroke-width": 0,
+			//"stroke-opacity": 0
+		}, 
+		pathToRootBarrier: {
+			r       : 2,
+			fill    :  "#D7BCBC", // paler version of crossing no action
+			opacity : ".55", 
+			stroke  : "transparent",
+			//"stroke-width": 0,
+			//"stroke-opacity": 0 
+		},
+		"pathToRootNonBarrier": {
+			r       : 2,
+			fill    :  "#D4D4D4", // paler version of crossing no action
+			opacity : ".55", 
+			stroke  : "transparent",
+			//"stroke-width": 0,
+			//"stroke-opacity": 0 
+		},
+		"nonBarrier": {
+			r                : 2,
+			fill             : "CCCCCC", // gray	
+			opacity          : 0.70, 
+			stroke           : "transparent", 
+			//"stroke-width"   : 0,
+			//"stroke-opacity" : 0
+		},
+		"crossingNoAction": {
+			r                : 5,
+			fill             : "#BC8F8F", // rosy brown //"#FFFF00", // red
+			opacity          : 0.75, 
+			stroke           : "transparent",
+			//"stroke-width"   : 0,
+			//"stroke-opacity" : 0
+		},
+		damNoAction: {
+			r                : 10,
+			fill             : "#FF8080", // red
+			opacity          : 0.8,
+			stroke           : "transparent",
+			//"stroke-width"   : 0,
+			//"stroke-opacity" : 0
+		},
+		crossingAction: {
+			r                : 6,
+			fill             : "#00FF00", // green "#00FF7F",  // spring green "#FFFF00", // yellow
+			opacity          : 1,
+			stroke           : "#666666", // medium gray
+			//"stroke-width"   : 3,
+			//"stroke-opacity" : 1
+		},
+		damAction: {
+			r              : 20,
+			fill           : "#00FF00", // green  // spring green "#FFFF00", // yellow
+			opacity        : "1",
+			stroke         : "#666666", // medium gray
+			//"stroke-width" : 10,
+			//"stroke-opacity": 1
+		},
+
+		selectedStream: {
+			"stroke-width" : 9 
+		},
+
+		unselectedStream: {
+			"stroke-width" : 1,
+			stroke : "#CCCCCC"
+		},
+
+		pathToRootStream: {
+			"stroke-width" : 7,  
+			stroke : "black"
+		},
+
+		colorScaleFunction : chroma.interpolate.bezier(['#E0E0E0', 'lightgreen', 'teal', 'mediumblue'])
 	},
-	"nonBarrier": {
-		r                : 2,
-		fill             : "CCCCCC", // gray	
-		opacity          : 0.70, 
-		stroke           : "transparent", 
-		"stroke-width"   : 0,
-		"stroke-opacity" : 0
-	},
-	"crossingNoAction": {
-		r                : 5,
-		fill             : "#BC8F8F", // rosy brown //"#FFFF00", // red
-		opacity          : 0.75, 
-		stroke           : "transparent",
-		"stroke-width"   : 0,
-		"stroke-opacity" : 0
-	},
-	damNoAction: {
-		r                : 10,
-		fill             : "#FF8080", // red
-		opacity          : 0.8,
-		stroke           : "transparent",
-		"stroke-width"   : 0,
-		"stroke-opacity" : 0
-	},
-	crossingAction: {
-		r                : 6,
-		fill             : "#00FF00", // green "#00FF7F",  // spring green "#FFFF00", // yellow
-		opacity          : 1,
-		stroke           : "#666666", // medium gray
-		"stroke-width"   : 3,
-		"stroke-opacity" : 1
-	},
-	damAction: {
-		r              : 30,
-		fill           : "#00FF00", // green  // spring green "#FFFF00", // yellow
-		opacity        : "1",
-		stroke         : "#666666", // medium gray
-		"stroke-width" : 10,
-		"stroke-opacity": 1
+
+	darkStyle: {
+		"unselectedNode": {
+			r       : 2,
+			fill    :  "#D4D4D4",
+			opacity : ".30", 
+			stroke  : "transparent",
+			//"stroke-width": 0,
+			//"stroke-opacity": 0
+		}, 
+		"pathToRootBarrier": {
+			r       : 2,
+			fill    :  "#003366", // paler version of crossing no action
+			opacity : ".55", 
+			stroke  : "transparent",
+			//"stroke-width": 0,
+			//"stroke-opacity": 0 
+		},
+		"pathToRootNonBarrier": {
+			r       : 2,
+			fill    :  "#669900", // paler version of crossing no action
+			opacity : ".55", 
+			stroke  : "transparent",
+			//"stroke-width": 0,
+			//"stroke-opacity": 0 
+		},
+		"nonBarrier": {
+			r                : 3,
+			fill             : "003366", // gray	
+			opacity          : 0.70, 
+			stroke           : "transparent", 
+			//"stroke-width"   : 0,
+			//"stroke-opacity" : 0
+		},
+		"crossingNoAction": {
+			r                : 3,
+			fill             : "#FFFF66", // rosy brown //"#FFFF00", // red
+			opacity          : 0.75, 
+			stroke           : "transparent",
+			//"stroke-width"   : 0,
+			//"stroke-opacity" : 0
+		},
+		damNoAction: {
+			r                : 5,
+			fill             : "#FF6E2C", // red
+			opacity          : 0.8,
+			stroke           : "transparent",
+			//"stroke-width"   : 0,
+			//"stroke-opacity" : 0
+		},
+		crossingAction: {
+			r                : 5,
+			fill             : "#78c44c", // green "#00FF7F",  // spring green "#FFFF00", // yellow
+			opacity          : 1,
+			stroke           : "#666666", // medium gray
+			//"stroke-width"   : 3,
+			//"stroke-opacity" : 1
+		},
+		damAction: {
+			r              : 8,
+			fill           : "#FF6E2C", // green  // spring green "#FFFF00", // yellow
+			opacity        : "1",
+			stroke         : "#8D198D", // medium gray
+			//"stroke-width" : 10,
+			//"stroke-opacity": 1
+		},
+
+		selectedStream: {
+			"stroke-width" : 7
+		},
+
+		unselectedStream: {
+			"stroke-width" : 2,
+			stroke : "#CCCCCC"
+		},
+
+		pathToRootStream: {
+			"stroke-width" : 5, 
+			stroke : "black"
+		},
+
+		colorScaleFunction : chroma.interpolate.bezier(['#223535', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue'])
 	}
-}
+} 
 
 
-// This is deprecated... and maybe not used. But is has the original colors, etc.
-var originalStyle = {
-	"color": {
-		"nonBarrier"          : "#003366", // blue
-		"crossingNoAction"    : "#FFFF66", // yellow			"#087e7d"
-		"crossingNoActionStroke": "transparent",
-		"crossingAction"      : "#78c44c", // green		//"#087e7d"		// turquoise		"#FFFF66"
-		"crossingActionStroke": "transparent",
-
-		"damNoAction"         : "#FF6E2C", // orange			"#78c44c"
-		"damNoActionStroke"   : "transparent",
-		"damAction"           : "#8D198D",  // purple		//"#9966FF" 	// purple"		//"#78c44c" // green "#FFFF66"
-		damActionStroke       : "transparent",
-
-		"pathToRootBarrier"   : "#003366",		// light green
-		"pathToRootNonBarrier": "#669900",	// blue
-		"unselectedNode"      : "#D4D4D4",			// grey
-		"pathToRootStream"    : "black",			// black
-		"unselectedStream"    : "#CCCCCC"		// grey
-	},
-	"size": {
-		"nonBarrier"                 : 3,
-		"crossingNoAction"           : 3,
-		"crossingNoActionStrokeWidth": 0,
-		"crossingAction"             : 5,
-		"crossingActionStrokeWidth"  : 2,
-		"damNoAction"                : 5,
-		"damNoActionStrokeWedth"     : 0,
-		"damAction"                  : 7,
-		"damActionStrokeWidth"       : 2,
-		"selectedStreamWidth"        : 7,
-		"deselectedStreamWidth"      : 5,
-		"pathToRootStreamWidth"      : 7
-
-	},
-	colorScaleFunction : chroma.interpolate.bezier(['#223535', 'darkslategray', 'teal', 'cornflowerblue', 'deepskyblue'])
-};
-
-// This is completely deprecated... I think
-var whiteStyle = {
-	"color": {
-		"nonBarrier"          : "#CCCCCC", 
-		"crossingNoAction"    : "#FF0000", // red
-		"damNoAction"         : "#FF0000", // red
-		"crossingAction"      : "#FFFF00", // yellow
-		crossingActionStroke  : "#999999", // charcoal
-		"damAction"           : "#FFFF00", // yellow
-		 damActionStroke      : "#999999", // charcoal
-		"pathToRootBarrier"   : "#A0A0A0", // gray
-		"pathToRootNonBarrier": "#A0A0A0", // gray
-		"unselectedNode"      : "#D4D4D4", // grey
-		"pathToRootStream"    : "black",   // black
-		"unselectedStream"    : "#CCCCCC"  // grey
-	},
-	"size": {
-		"nonBarrier"            : 2,
-		"crossingNoAction"      : 4,
-		"damNoAction"           : 6,
-		"crossingAction"        : 10,
-		"damAction"             : 14,
-		"selectedStreamWidth"   : 9,
-		"deselectedStreamWidth" : 1,
-		"pathToRootStreamWidth" : 7
-	},
-
-    colorScaleFunction : chroma.interpolate.bezier(['#E0E0E0', 'lightgreen', 'teal', 'mediumblue'])
-//    colorScaleFunction : chroma.interpolate.bezier(['#CCDDEE', 'lightgreen', 'teal', 'mediumblue'])
-//    colorScaleFunction : chroma.interpolate.bezier(['#BBBBBB', 'lightgreen', 'teal', 'navy'])
-//	colorScaleFunction : chroma.scale('OrRd')
-//    colorScaleFunction : chroma.interpolate.bezier(['lightyellow', 'lightgreen', 'teal', 'navy'])
-//	colorScaleFunction : chroma.interpolate.bezier(['lightgray', 'lightgreen', 'teal', 'navy'])
-	//	colorScaleFunction : chroma.interpolate.bezier(['lightgray', 'deepskyblue', 'cornflowerblue', 'slateblue'])   best so far
-	//colorScaleFunction : chroma.interpolate.bezier(['lightgray', 'lightgray', 'deepskyblue'])
-	//colorScaleFunction : chroma.interpolate.bezier(['lightyellow', 'orange', 'deeppink', 'darkred'])
-};
 
 
-var style = whiteStyle;
+
 
 /**********************************************************************************************
  *  Node class. 
  *    Stores a node in the river network, which may be a barrier or a split in the river.
  *    A node can have as many children as necessary. A child connection includes the child
  *    node and the length and accessibility of the river segment connecting the two nodes.
- *    Every node is uniquely identified by an id. 
+ *    Every node is uniquely identified by an id. That id is not the same as the barrier id
+ *    in the original input data. 
  **********************************************************************************************/
-function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, children, parent){
+function Node (id, isBarrier, barrierType, possibleActions, passability){
 	this.id = id;
+
 	this.isBarrier = isBarrier; 
-	// 1 crossing 2 dam
-	this.barrierType = barrierType;
+	this.barrierType = barrierType;     // 1 crossing 2 dam
+
+	// stores the possible actions and the resulting improved passability
+	// in a dictionary
 	this.possibleActions = possibleActions;
-	this.passability = passability; // switch to see colors 0.93;   
-	this.passabilityImprovement = 0.0;
-	this.improvedPassability = this.passability;   
-	this.accessibilityFromRoot = -1;
-	this.accessibilityLeaving;
-	this.improvedAccessibilityFromRoot;
-	this.improvedAccessibilityLeaving; 
-	this.x = x;
-	this.y = y; 
+
+	this.passability = passability;     			// passability when no action is taken
+	this.passabilityImprovement = 0.0;  			// the improvement to the base-level passability
+	this.improvedPassability = this.passability;    // the current passability (with action taken)
+	
+	this.accessibilityFromRoot = -1;				// the accessibility coming in from the root of the network
+	this.accessibilityLeaving;						// the accessibility leaving the node 
+
+	this.x = 0;										// the original x and y for the node
+	this.y = 0; 									// found from the stream data, so when
+													// nodes are created the number hasn't been
+													// retrieved yet
+	
+
+	// 2D array to store the connections to the node's children
+	// this array stores the child nodes, as well as all information
+	// needed for the edges
 	this.children = new Array();
-	this.children[0] = new Array(); // the child node
-	this.children[1] = new Array(); // the length of the stream segment to child
-	this.children[2] = new Array(); // the accessibility of the stream segment to the child
-	this.children[3] = new Array(); // the streamSegments path object for drawing
-	this.children[4] = new Array(); // the stream id
-	this.outGoingAccessibility = 0.0; 
-	this.parent = parent;
-	this.selected = true;
-	this.partiallySelected = false;
-	this.nodeDrawing = null;
-	this.needsNodeDrawing = true;
-	this.needsClickListener = true;
-	this.currentAction = -1;
-	this.previousHabitat = -1;
-	this.originalHabitat = -1;
-	this.currentHabitat = -1;  
-	this.requireRepaint = true; 
+	this.children[0] = new Array(); 				// the child node  (will be upstream of node)
+	this.children[1] = new Array(); 				// the length of the stream segment to child
+	this.children[2] = new Array(); 				// the accessibility of the stream segment to the child
+	this.children[3] = new Array(); 				// the streamSegments path object for drawing
+	this.children[4] = new Array(); 				// the stream id 
+	
+	this.parent = null;								// the parent of a node is downstream
+													// the parent is not known until the streams data is processed
+	
+	this.selected = true;							
+	this.partiallySelected = false;					// if a node is partially selected, it is on the path to the root
+													// from the currently selected subnetwork
+	
+	this.nodeDrawing = null;						// stores raphael circle object for the node
+	this.needsNodeDrawing = true;					// non-barriers do not have drawn circles for them
+	this.needsClickListener = true;					 
+	
+	this.currentAction = -1;						// stores currently chosen action at this node
+	this.previousHabitat = -1;						// the last habitat gain amount
+	this.originalHabitat = -1;						// the amount of habitat within the subnetwork starting at
+													//   node from when no actions were taken 
+	this.currentHabitat = -1;  						// the current amount of habitat starting from node
+	
+	this.requireRepaint = true; 					// only repaint when it is possible that the display 
+													// of this node or part of the subnetwork is different
+													// managed by setters and paint functions
 }
   
 
@@ -195,41 +278,28 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			}
 		}
 		return false;
-	}, 
+	},  
 
 	/**
-	 * Set the raphael node drawing object. 
+	 * Add the node drawing for the node and its descendants (if they 
+	 * are barriers). 
+	 *
+	 * override: boolean
+	 *           add a node drawing for this node, regardless of 
+	 *			 its barrier status. (intended use: making roots have drawings)
 	 **/
-	Node.prototype.setDrawingNode = function (drawing){ 
-		this.nodeDrawing = drawing; 
-		pairedNode = this;
-		this.needsNodeDrawing = false
-		this.nodeDrawing.click(function(){ 
- 			dataManager.updateSelected(pairedNode);
- 		});  
-	},
-
-	/**
-	 * Add the node drawing for the node and its descendants. 
-	 **/
-	Node.prototype.addDrawingNodes = function(count, override){ 
+	Node.prototype.addDrawingNodes = function(override){ 
+		// add a drawing if appropriate
 		if (this.needsNodeDrawing && (this.isBarrier || override)){
-			this.needsNodeDrawing = false;
-			if (this.barrierType == 2){
-				this.nodeDrawing = paper.circle(this.x,this.y,5);
-			} else {
-				this.nodeDrawing = paper.circle(this.x,this.y,3);
-			}
-			this.nodeDrawing.attr({fill: "green"}); 
+			this.needsNodeDrawing = false; 
+
+			// the drawing settings will be updated in paint
+			this.nodeDrawing = paper.circle(this.x,this.y,5); 
 		} 
-		
-		if (count >= 2000){
-			// tmp comment ourAlert("still drawing nodes!");
-			count = 0;
-		}
-		
+		 
+		// add drawings for all barrier children nodes
 		for(index in this.children[0]){
-			this.children[0][index].addDrawingNodes(++count, false);
+			this.children[0][index].addDrawingNodes(false);
 		}
 	},
 
@@ -250,10 +320,12 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		previousPassability = this.improvedPassability 
 
 		// -1 means no action is to be taken 
+		// there is no passability improvement from the base level
 		if (action == -1){
 			this.improvedPassability = this.passability
 			this.currentAction = -1 
 		}
+
 		// possibleActions should not be null. 
 		else if (this.possibleActions == null){
 			console.log("problem: tried to set action " + action + " of node " + this.toString()
@@ -261,9 +333,9 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			this.improvedPassability = this.passability
 			this.currentAction = -1 
 		}
-		// set the action and update the passability accordingly
-		else { 
 
+		// set the action and update the passability accordingly
+		else {  
 			this.improvedPassability = this.possibleActions[action].improvedPassability 
 			this.currentAction = action 
 		} 
@@ -279,65 +351,63 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	 * Return a string with the node id, the id of its children, and information
 	 * about passability, accessibility, and selection status.
 	 *
-	 * This string is not an html report string, which is given by reportString()
+	 * This string is not an html report string, which is given by htmlReportString()
 	 **/
-	Node.prototype.toString = function (){
-		output = "Node " + this.id + "\n     ";  
- 				       	
- 		// add the ids of all child nodes
- 		if(this.children != null && this.children[0] != null && this.children[0].length > 0){ 
-			for (index in this.children[0]){
-				output += this.children[0][index].id + ","
-			}
-		}  
- 		
-		output += "\nselected: " + this.selected;
-		output += "\npartially selected: " + this.partiallySelected;
-		output += "\npassability: " + this.passability.toString();
-		output += "\nactions: " + this.possibleActions;
-		output += "\nisBarrier: " + this.isBarrier; 
-		if (this.children[2] != undefined && this.children[2][0] != undefined){
-			output += "\n\naccessibility going out: " + this.children[2][0];
-		}
-
-		return output;
+	Node.prototype.toString = function (){ 
+		return this.formatInformation("\n")
 	},
 
 	/** 
 	 * Return a string with the node id, the id of its children, and information
 	 * about passability, accessibility, and selection status.
 	 * 
-	 * This string is in html format. 
+	 * This string is in html format (to be used for displaying information
+	 * on the page itself). 
 	 **/
-	Node.prototype.reportString = function (){
-		output = "ID " + this.id + "<br>";    
-		if (this.isBarrier){ 
+	Node.prototype.htmlReportString = function (){  
+		return this.formatInformation("<br>")
+	},
+
+	/**
+	 * Return a string with the node id, the id of its children, and information
+	 * about passability, accessibility, and selection status.
+	 *
+	 * Depending on the use of the string, it will need a different line break
+	 * symbol. "<br>" should be used for html, and "\n" should be used for other 
+	 * uses such as logged messages.  
+	 **/
+	Node.prototype.formatInformation = function (lineBreak){
+		output = "ID " + this.id + lineBreak;    			// always display ID
+		
+		if (this.isBarrier){ 								// if barrier, display type
 			if (this.barrierType == 1){
-				output += "Crossing <br>";
+				output += "Crossing " + lineBreak;
 			} else if (this.barrierType == 2){
-				output += "Dam <br>";
+				output += "Dam " + lineBreak;
 			}
-			output += "passability: " + this.passability.toFixed(3) + "<br>";  
-			if(this.currentAction != -1){
-				output += "action taken: " + this.currentAction + "<br>"; 
-				output += "improved passability: " + this.improvedPassability.toFixed(3) + "<br>";   
+
+			output += "passability: " + this.passability.toFixed(3) + lineBreak;  // display the base passability
+
+			if(this.currentAction != -1){										  // if an action has been taken,	
+				output += "action taken: " + this.currentAction + lineBreak; 	  // display the improved passability, action	
+				output += "improved passability: " + this.improvedPassability.toFixed(3) + lineBreak;   
 			}
 		}
 		
+		// if there are streams leading out from this node, the accessibility leaving the node
 		if (this.children[2] != undefined && this.children[2][0] != undefined){
-			output += "accessibility going out: " + this.children[2][0].toFixed(3) + "<br>"; 
+			output += "accessibility going out: " + this.children[2][0].toFixed(3) + lineBreak; 
 		}  
 
 		return output;
 	},
 
 	/** 
-	 * Return a string with the node id, the id of its children, and information
-	 * about passability, accessibility, and selection status.
+	 * Return a string with the stream ID and the accessibility of the stream.
  	 * 
 	 * This string is in html format. 
 	 **/
-	Node.prototype.reportStringForStream = function (index){ 
+	Node.prototype.htmlReportStringForStream = function (index){ 
 		output = "Stream " + this.children[4][index] + "<br>";    
 		if (this.children[2][index] != undefined) { 
 			output += "accessibility: " + this.children[2][index].toFixed(3) + "<br>"; 
@@ -351,6 +421,8 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 
 	/**
 	 * Sets the selection status of this node to the value of param selected.  
+	 *
+	 * Flags the node as needing paint if the value is changed.
 	 **/ 
 	Node.prototype.setSelection = function (selected){
 		if (this.selected != selected){
@@ -362,38 +434,24 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 	/**
 	 * Sets the partial selection status of this node to param partiallySelected.
 	 * If a node is partially selected, it is on the path to the root. 
+	 *
+	 * Flags the node as needing paint if the value is changed.  
 	 **/ 
 	Node.prototype.setPartialSelection = function (partiallySelected){
 		if (this.partiallySelected != partiallySelected){
 			this.requireRepaint = true
-			this.partiallySelected = partiallySelected 
-			//this.nodeDrawing.attr({fill: "#66FF66", stroke:"transparent","opacity":".85"});
+			this.partiallySelected = partiallySelected  
 		}
-	},
-
-	/**
-	 * Returns the current display radius for the node based 
-	 * on barrier type and current action status
-	 **/
-	Node.prototype.getNodeRadius = function(){
-		if(this.currentAction == -1){
-			if (!this.isBarrier || this.barrierType == 1){
-				return style.size.crossingNoAction;
-			} else {
-				return style.size.damNoAction;
-			}
-		} else {
-			if (!this.isBarrier || this.barrierType == 1){
-				return style.size.crossingAction;
-			} else {
-				return style.size.damAction;
-			}
-		}
-	},
+	}, 
 
 	/**
 	 * Set the colors of the node drawing and the colors of stream segments
 	 * leading to the child nodes; then call the function for all descendants. 
+	 *
+	 * If the node does not need repaint, does not repaint the node
+	 * or its outgoing streams, but the function does still call 
+	 * itself on the child nodes. It is possible that they require
+	 * a repaint. 
 	 **/
 	Node.prototype.setColors = function (){  
 		// update colors of this node and streams leaving it
@@ -407,11 +465,14 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		for (index in this.children[0]){
 			this.children[0][index].setColors();  
 		}		 
+
 		this.requireRepaint = false
-	},  
+	},   
 
 	/**
 	 * Set the colors for deselected areas.  
+	 *
+	 * If repaint is not needed, does nothing. 
 	 **/
 	Node.prototype.colorSelected = function() {
 		if (!this.requireRepaint){ 
@@ -421,28 +482,36 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 		// selected
 		// color the node  
 		if (!this.needsNodeDrawing){
+
+			// non-barrier node
 			if (!this.isBarrier){ 
 				// the only node that isn't a barrier and is being colored is the root
-				this.nodeDrawing.attr(styles.nonBarrier);
-			} else {
-				// no action taken
+				this.nodeDrawing.attr(currentStyle.nonBarrier);
+			} 
+
+			// barrier node
+			else {
+				// no action taken 
 				if (this.currentAction == -1){
-					// crossing, no action taken
+					// crossing 
 					if(this.barrierType == 1){
-						this.nodeDrawing.attr(styles.crossingNoAction);
+						this.nodeDrawing.attr(currentStyle.crossingNoAction);
 					} 
-					// dam, no action taken
+					// dam 
 					else { 
-						this.nodeDrawing.attr(styles.damNoAction);
+						this.nodeDrawing.attr(currentStyle.damNoAction);
 					} 
 				} 
-				// some action taken (dam or crossing)
+
+				// some action taken  (dam or crossing)
 				else {
+					// crossing
 					if(this.barrierType == 1){
-						this.nodeDrawing.attr(styles.crossingAction);
+						this.nodeDrawing.attr(currentStyle.crossingAction); 
 					} 
+					// dam
 					else {
-						this.nodeDrawing.attr(styles.damAction);
+						this.nodeDrawing.attr(currentStyle.damAction);
 					}
 				}
 			}
@@ -450,57 +519,56 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 
 		// color the paths to the children (river segments)
 		for (index in this.children[0]){ 
-			colorString = this.getColor(this.children[2][index])
+			// since the color of selected streams changes, must get the current color
+			// (get the color from the gradient based on accessibility)
+			colorString = this.getColor(this.children[2][index]) 
+			
 			this.children[3][index].attr({
 				stroke         : colorString,
-				"stroke-width" : style.size.selectedStreamWidth}); 
+				"stroke-width" : currentStyle.selectedStream["stroke-width"]
+			}); 
 		}
 	},
 
 	/**
 	 * Set the colors for selected areas. 
+	 *
+	 * If repaint is not needed, does nothing.  
 	 **/
 	Node.prototype.colorUnselected = function() {
 		if (!this.requireRepaint){ 
 			return    
-		} 
-
-		nodeSize = this.getNodeRadius();
+		}  
 
 		if (!this.needsNodeDrawing){
+
+			// on the path to the root 
 			if(this.partiallySelected){
-				// on the path to the root 
-				if(!this.isBarrier){
-					var nodeSize = this.barrierType == 1 ? style.size.crossingNoAction : style.size.damNoAction;
-					this.nodeDrawing.attr({
-						fill    : style.color.pathToRootBarrier, 
-						stroke  : "transparent",
-						opacity : ".55", 
-						r       : nodeSize}); 
-				} else {
-					this.nodeDrawing.attr({
-						fill    : style.color.pathToRootNonBarrier, 
-						stroke  : "transparent",
-						opacity : ".50", 
-						r       : style.size.nonBarrier}); 
+				// non-barrier
+				if(!this.isBarrier){ 
+					this.nodeDrawing.attr(currentStyle.pathToRootNonBarrier)
+				} 
+				// barrier
+				else { 
+					this.nodeDrawing.attr(currentStyle.pathToRootBarrier)
 				}
-			} else {
-				// completely unselected
-				this.nodeDrawing.attr(styles.unselectedNode);
 			} 
+
+			// completely unselected
+			else {     
+				this.nodeDrawing.attr(currentStyle.unselectedNode)     
+			}    
 		}
  
 		for (index in this.children[0]){  
-			// if this and the child are partiallySelected, color the stream black (path to root)
-			if(this.partiallySelected && (this.children[0][index].partiallySelected || this.children[0][index].selected)){
-				this.children[3][index].attr({
-					stroke        : style.color.pathToRootStream,
-					"stroke-width": style.size.pathToRootStreamWidth
-				}); 
-			} else { 
-				this.children[3][index].attr({
-					stroke        : style.color.unselectedStream,
-					"stroke-width": style.size.deselectedStreamWidth}); // grey
+			// if this and the child are partiallySelected, this stream is on the path to root   
+			if(this.partiallySelected && (this.children[0][index].partiallySelected || this.children[0][index].selected)){ 
+				this.children[3][index].attr(currentStyle.pathToRootStream); 
+			} 
+
+			// this outgoing stream is completely unselected
+			else {  
+				this.children[3][index].attr(currentStyle.unselectedStream);
 			}  
 		} 
 	},
@@ -508,21 +576,25 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
  
  	/**
  	 * Get the appropriate color for a stream segment. 
+ 	 *
+ 	 * accessibility is used to retrieve the appropriate color
+ 	 * from the color gradient. 
  	 **/
 	Node.prototype.getColor = function(accessibility){   
-		return style.colorScaleFunction(accessibility).hex();
+		return currentStyle.colorScaleFunction(accessibility).hex();
 	},
 
 	/**
-	 * Calculate the habitat for the node by taking to sum
-	 * of each segment's accessibility times the length. 
+	 * Calculate the habitat for the node by taking to sum   
+	 * of each descendant segment's accessibility times the   
+	 * length.   
 	 *
 	 * if isOriginal is true, stores the habitat calculated
 	 * as the original amount of habitat at the node (before 
 	 * actions are taken) 
 	 **/ 
 	Node.prototype.calculateHabitat = function(isOriginal){
-		this.previousHabitat = this.currentHabitat
+		this.previousHabitat = this.currentHabitat		// used for flagging requireRepaint 
 
 		habitat = 0; 
 
@@ -546,17 +618,21 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
 			// to this subnetwork form the root. 
 			this.originalHabitat = habitat/this.accessibilityFromRoot
 		}
+
 		this.currentHabitat = habitat;
 		return habitat;
 	}, 
 
 	/**
 	 * Calculate the accessibility of the node's child segments 
-	 * by multiplying initial accessibility (comingIN) by the 
+	 * by multiplying initial accessibility (comingIn) by the 
 	 * passability. Then call itself for the node's descendants.  
 	 **/ 
 	Node.prototype.calculateAccessibility = function(comingIn){
 		originalAccessibility = -1
+		
+		// if this node has children, compare outgoing accessibility
+		// (for repaint flagging)
 		compare = false
 		if (this.children != null && this.children[2][0] != null){
 			originalAccessibility = this.children[2][0]
@@ -603,20 +679,21 @@ function Node (id, isBarrier, barrierType, possibleActions, passability, x, y, c
  *    Manages the data of the River Network and the OPT solution data structure. 
  **********************************************************************************************/
 function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
-	this.networkSource = [];      // in case there are multiple networks, store the roots in array
-	this.selectedNode = selectedNode;
-	this.OPT = OPT;
-	this.budget = budget;  
-	this.allNodes = allNodes;    // dictionary of all nodes indexed by node id
+	this.networkSource = [];      		// in case there are multiple networks, store the roots in array
+	this.selectedNode = selectedNode;   // the root fo the currently selected subnetwork
+	this.allNodes = allNodes;    		// dictionary of all nodes indexed by node id
+
+	this.OPT = OPT;						// the solution data
+	this.budget = budget;  				// the current budget available 
 }  
 
 	/**
-	 * Finds the selected portion of the network, then sets each node in the 
-	 * selected portion of the network to selected, partially selects the path 
-	 * to the root, and deselects everything else.  
+	 * Selects the subnetwork rooted at node calledFrom, partially
+	 * selects the path to the root, and completely deselects the rest of the network. 
 	 *
-	 * (once on unselected is found, everything is treated as unselected, 
-	 *  so only the first unselected node needs to be changed)
+	 * Updates the current solution as well. 
+	 *
+	 * Called when a node or stream is clicked. 
 	 **/ 
 	DataManager.prototype.updateSelected = function (calledFrom){ 
 		ourAlert("in updateSelected. calledFrom \n" + calledFrom.toString());  
@@ -655,8 +732,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	}, 
 
 	/**
-	 * Sets the path from current to the root to partially selected.
-	 * Any offshoots from that path are set to unselected. 
+	 * Sets the path from current to the root to partially selected.  
 	 **/
 	DataManager.prototype.partiallyDeselect = function  (current, previous){
 		if (current == null){
@@ -694,9 +770,9 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	 * descendants. 
 	 **/
 	DataManager.prototype.clearPassabilityImprovement = function(current){
-		current.passabilityImprovement = 0.0 
-		current.improvedPassability = current.passability 
-		current.currentAction = -1   
+		current.passabilityImprovement = 0.0 				// there is no improvement
+		current.improvedPassability = current.passability 	// reset to base level
+		current.currentAction = -1   						// no action is being taken
 
 		// clear descendants' passability improvements 
 		if (current.children != null){
@@ -724,7 +800,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	}
 
 	/**
-	 * Finds the solution for the current budget and selected portion
+	 * Finds the solution for the current budget and selected subnetwork
 	 * and traverses the network to update the passability of the barriers
 	 * and the accessibility of the river segments. 
 	 **/
@@ -764,6 +840,9 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	 * budget and network selection. 
 	 **/
 	DataManager.prototype.findSolutionStart = function (){ 
+		// stores the best found solution entry point
+		// it is possible that there is not solution with the exact same budget,
+		// so we take the closest one <= budget
 		closestEntry = null
 		closestCost = null
 		desiredID = dataManager.selectedNode.id
@@ -776,6 +855,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			entry = entriesForNode[key]
 			cost = Number(entry["cost"]) 
 			
+
 			if (!isNaN(cost) && ((closestCost == null && cost <= dataManager.budget) || 
 				((dataManager.budget - cost) < (dataManager.budget - closestCost)) && cost <= dataManager.budget)) {  
 				closestEntry = entry
@@ -873,6 +953,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 
 	/**
 	 * Add events to the node and all its descendants. 
+	 * (click and hover)
 	 **/
 	DataManager.prototype.addEvents = function(node){  
 
@@ -886,7 +967,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				// adds hover functions: the first called during hover; the second,
 				// when hover stops.   
 				node.nodeDrawing.hover(function(){
-					information.innerHTML = node.reportString()  
+					information.innerHTML = node.htmlReportString()  
 				}, function(){
 					information.innerHTML = "\n\n" 
 				});
@@ -899,7 +980,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				});
 
 				node.children[3][index].hover(function(){ 
-					information.innerHTML = node.reportStringForStream(index)    
+					information.innerHTML = node.htmlReportStringForStream(index)     
 				}, function(){
 					information.innerHTML = "\n\n" 
 				});
@@ -975,18 +1056,22 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	/**
 	 * Reads in all the nodes, creates objects for them, and stores them into a dictionary.  
 	 * Returns the dictionary with all of the nodes
+	 *
+	 * nodes is the portion of the json data that encodes the nodes information
 	 **/ 
 	DataManager.prototype.readInNodes = function  (nodes){ 
 		// read in all the nodes, create objects for them, and store them into a dictionary.  
 		allNodes = {};
 		numberNodes = 0;
-		barrierTypes = {"0":0, "1":0, "2":0};
+		barrierTypes = {"0":0, "1":0, "2":0};  // to check that the barrier types are reasonable
+		
 		for (index in nodes){
 			current = nodes[index];
 			currentID = current.ID;  
  
-			//id, isBarrier, barrierType, possibleActions, passability, x, y, children, parent
+			
 			action = null
+			// store the appropriate options for actions: crossings, dams, or no actions 
 			if(current.barrierType == 1){
 				action = crossings 
 				barrierTypes["1"] += 1;
@@ -996,11 +1081,12 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 			} else {
 				barrierTypes["0"] += 1;
 			}
- 
- 			newNode = new Node(currentID, current.isBarrier, current.barrierType, action, current.passability, 0, 0, null, null);         
+
+ 			// id, isBarrier, barrierType, possibleActions, passability 
+ 			newNode = new Node(currentID, current.isBarrier, current.barrierType, action, current.passability);         
 			allNodes[currentID] = newNode 
    
-			numberNodes++;
+			numberNodes++; 
 		} 
    
 		ourAlert("barrier type counts: 0: " + barrierTypes["0"] + ", 1: " + barrierTypes["1"] + ", 2: " + barrierTypes["2"]) 
@@ -1010,7 +1096,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	},    
 
 	/**
-	 * Reads in all streams and uses them to form connections between the nodes.  
+	 * Reads in all streams and uses them to form connections between the nodes.   
 	 **/ 
 	DataManager.prototype.readInStreams = function  (streams, allNodes){ 
 		problems = 0;
@@ -1026,31 +1112,17 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				upstreamID = current.upstreamNodeID.toString();
 				downstreamID = current.downstreamNodeID.toString();
 				upstream = allNodes[upstreamID]; 
-				downstream = allNodes[downstreamID];  
-
-				// this should not be necessary
-				// if a node is missing, build a default one
-				if (upstream == null){ 
-					console.log("Data Error: Missing node while reading in streams data. !!! \n    building a default node (this should not be needed)") 
-					upstream = new Node(upstreamID, false, -1, null, 1.0, 0, 0, null, null)
-					allNodes[upstreamID] = upstream
-					nodesMissingReport += upstreamID + "\n"
-				}
-				// this should not be necessary 
-				// if a node is missing, build a default one
-				if (downstream == null){
-					console.log("Error: Missing node while reading in streams data. \n    building default node (this should not be needed)")
-					downstream = new Node(downstreamID, false, -1, null, 1.0, 0, 0, null, null)
-					allNodes[downstreamID] = downstream
-					nodesMissingReport += upstreamID + "\n"
-				}
+				downstream = allNodes[downstreamID];   
 
  
 				/*if (downstream.hasChild(upstream)){
+					alert("already has connection")
 					continue;
 				} */
 
 				// build a path for drawing each stream
+				// Mx,y moves a metaphorical pencil to a point
+				// Lx,y draws a line from where the pencil is to x,y 
 				pathDirections = "M"; 
 				for (j = 0; j + 1 < current.segments.length; j+=2){ 
 					if (pathDirections != "M"){
@@ -1062,13 +1134,11 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				} 
  
  				// add the path to the drawing canvas
-				path = paper.path(pathDirections);  
-				path.attr({"stroke-width": style.size.selectedStreamWidth});
-				path.attr({stroke:"#FF4D4D"});  
+				path = paper.path(pathDirections);   
 
 				// use the start and end points of the stream's path for the node's XY coordinates. 
- 	 			downstream.setXY(current.segments[0], current.segments[1]);  //normal
-				upstream.setXY(current.segments[j-2], current.segments[j-1]) //normal  
+ 	 			downstream.setXY(current.segments[0], current.segments[1]);   
+				upstream.setXY(current.segments[j-2], current.segments[j-1])  
   
 				downstream.addChild(upstream, current.length, 0, path, index);  
 				successes++; 
@@ -1090,11 +1160,11 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 	 * (calculations, deselection, and color setting) 
 	 **/ 
 	DataManager.prototype.initNetwork = function  (root){ 
-		root.addDrawingNodes(0, true);   
-		root.calculateAccessibility(1.0);
-		root.calculateHabitat(true);
-		this.deselect(root)
-		root.setColors();
+		root.addDrawingNodes(true);   			// add node drawings, including one for the root
+		root.calculateAccessibility(1.0);		// calculate accessibility starting from full 1.0
+		root.calculateHabitat(true);			// calculate current habitat and store it as initial habitat
+		this.deselect(root)						 
+		root.setColors();						 
 		root.nodeDrawing.attr({r:20});  
 	}
 
@@ -1164,6 +1234,10 @@ var networkCenter;
 var colors;
 
 // visual settings for barriers and streams
+// are now at the top of the file because
+// the styles are space intensive
+
+var currentStyle = styles.whiteStyle  
 
 // settings for how to display alerts
 var shouldDisplayAlerts = false
@@ -1198,8 +1272,9 @@ function resetTranslation(){
 	newTopLeft = recalculateNetworkTopLeft()
 
 
-	translateX = -newTopLeft[0] 
-	translateY = -newTopLeft[1]	 
+	translateX = -newTopLeft[0] 	// because it is the canvas that is being moved around
+	translateY = -newTopLeft[1]	 	// we need to translate by the opposite of the amount
+									// we want the visual components to be translated by
 
 	console.log("new translate x,y: " + translateX + ", " + translateY) 
 	
@@ -1210,6 +1285,8 @@ function resetTranslation(){
  * Calculates the current network coordinate that should be located
  * at the top left corner of the display area. (calculated from 
  * current scale and networkCenter) 
+ *
+ * (network coordinates come from the x,y values read in from the network data.)   
  **/
 function recalculateNetworkTopLeft(){ 
 
@@ -1284,6 +1361,8 @@ function zoom(factor){
  
 /**
  * Updates Raphael/SVG's viewbox properties to shift the visible portion of the canvas.
+ * 
+ * Should not be called after the initial setup
  **/
 function initViewBox() { 
 	svg = document.getElementsByTagName("svg")[0]; 
@@ -1485,7 +1564,7 @@ function addAllPageEvents(){
 } 
 
 /**
- * Set up raphael paper element, and create the color scale for accessibility. 
+ * Set up raphael paper element relative to the current browser window size
  **/ 
 function initDisplaySettings(){
 	browserWidth = $(window).width();
@@ -1517,9 +1596,11 @@ function initTransformElements(){
 	translateY = 0   
 	scale = 1
 
+	// used to manually pan
 	svgPan = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
 	svgPan.setAttribute('transform', 'translate(0,0)');   
 
+	// used to manually zoom
 	svgScale = document.createElementNS("http://www.w3.org/2000/svg", "svg:g"); 
 	svgScale.setAttribute('transform', 'scale(1)');  
 	
@@ -1543,6 +1624,7 @@ function initTransformElements(){
 
 /**
  * Starts the program, though is not called automatically by javascript. 
+ * Called for onload from withing the html file
  *
  * Initializes variables for NetworkExplorer and adds listeners to items
  * on the webpage. 
@@ -1582,6 +1664,4 @@ function main(){
 			dataManager.addEventsToAllBranches(dataManager.networkSource);
 		});
 	}
-}
-
-// main() used to be called here. It is now called by the body onload handler from the HTML
+} 

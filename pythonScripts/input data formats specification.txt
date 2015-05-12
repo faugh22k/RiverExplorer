@@ -1,0 +1,31 @@
+barriersinfocode.txt
+	barrierID  barrierType  passability
+	(barrierID does not match nodeID!)
+
+streamscode.txt
+	streamID  upstreamID  downstreamID  length  upstreamBarrierID  upstreamBarrierType  downstreamBarrierID downstreamBarrierType
+
+	upstream is the child node of downstream 
+	if a node does not have a barrier, the barrierID and barrierType will both be -1
+
+	* note: The absolute original streamscode does not come with streamIDs. StreamIDs are essential for
+			almost all of our data processing scripts. If there is an original data file without stream
+			IDs, run the script addIndicesInPlace in order to add them (it will do so by assigning line
+			numbers as IDs). If the file was generated (from a file A without stream IDs, to another file B
+			without stream IDs, it is advised that you add the IDs to the original file (A) and regenerate
+			file B)
+
+streamSegments.txt
+	streamID  start  end  x1 y1  x2 y2  ...  xN yN
+	(N must be >= 2, as all streams segments have a starting and ending point)
+
+	StreamSegment data is used purely for drawing: start and end are not very consequential.
+	convertToJSON script does not reference them or pass them along to RiverExplorer
+
+treeStructure.txt
+	downstreamID :  upstreamID1   upstreamID2 ... 
+                  	(one, two, ..., n   or   none)   
+                  		(0 <= n  ... n has no upper bound)
+
+optTableK==SomeNumber.txt 
+	nodeID   value   cost   actionID   firstChildID   valueChild   siblingID   valueSibling      

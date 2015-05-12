@@ -2,21 +2,23 @@
 // format:
 // 		styles = {
 //			<style-option>,
-//			<style-option2> 
-// 			[...additional styles...]
+//			<style-option2>, 
+// 			[...additional styles...]  
 // 		}
 //
 //  	format of a style option:
 //  		style-option : {
 //				oneNodeTypeSettings : {
 //					r : __, fill : __, opacity : __, stroke : __
-//				} 
-//				[...settings for other node types...]
+//				}, 
+//				[...settings for other node types...],
 //
 //				streamTypeSettigns : {
 //					"stroke-width" : __, stroke : __
-// 				}
-//			    [...settings for other stream types...] 
+// 				},
+//			    [...settings for other stream types...], 
+//			
+//				colorScaleFunction : chroma.interpolate.bezier([<colors specifying color scale here>])
 //			}
 //			
 var styles = {
@@ -415,6 +417,8 @@ function Node (id, isBarrier, barrierType, possibleActions, passability){
 			console.log("accessibility of stream segment " + index + " of " + this.id + 
 				" is undefined upon report generation. \n\n " + this.toString())
 		}
+
+		output += "<br>parent node: " + this.id
 
 		return output;
 	},
@@ -969,7 +973,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				node.nodeDrawing.hover(function(){
 					information.innerHTML = node.htmlReportString()  
 				}, function(){
-					information.innerHTML = "\n\n" 
+					information.innerHTML = "<br>" 
 				});
 			}
 
@@ -982,7 +986,7 @@ function DataManager(networkSource, selectedNode, allNodes, OPT, budget){
 				node.children[3][index].hover(function(){ 
 					information.innerHTML = node.htmlReportStringForStream(index)     
 				}, function(){
-					information.innerHTML = "\n\n" 
+					information.innerHTML = "<br>" 
 				});
 			}
 
@@ -1237,6 +1241,9 @@ var colors;
 // are now at the top of the file because
 // the styles are space intensive
 
+// the chosen style for the curent display of the website
+// specifies colors and other drawing settings for nodes
+// and streams
 var currentStyle = styles.whiteStyle  
 
 // settings for how to display alerts
@@ -1658,6 +1665,9 @@ function main(){
 	else {
 		// Normal case: make async call for the data
 		var barrierFile = "BarrierAndStreamInfoOpt.json"; // change this to use different data
+		//var barrierFile = "BarrierAndStreamInfoOptReduced1.json"; // smaller test network one (westfield) 
+		//var barrierFile = "BarrierAndStreamInfoOptReduced2.json"; // smallest test network two (in middle left area of the main one)
+		//var barrierFile = "BarrierAndStreamInfoOptReduced3.json"; // largest test network three (top third of main watershed)
 
 		$.get(barrierFile, function(data){  
 			dataManager.init(data);
